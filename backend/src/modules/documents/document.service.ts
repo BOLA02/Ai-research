@@ -1,0 +1,7 @@
+import { AppError } from "../../shared/errors";import { getProject,requireProjectWriteAccess } from "../projects";import * as repository from "./document.repository";
+const getAuthorized=async(userId:string,projectId:string,id:string)=>{await getProject(userId,projectId);const row=await repository.find(projectId,id);if(!row)throw new AppError(404,"DOCUMENT_NOT_FOUND","Document not found");return row};
+export async function list(userId:string,projectId:string){await getProject(userId,projectId);return repository.list(projectId)}
+export async function get(userId:string,projectId:string,id:string){return getAuthorized(userId,projectId,id)}
+export async function create(userId:string,projectId:string,input:Parameters<typeof repository.create>[1]){await requireProjectWriteAccess(userId,projectId);return repository.create(projectId,input)}
+export async function update(userId:string,projectId:string,id:string,input:Parameters<typeof repository.update>[2]){await requireProjectWriteAccess(userId,projectId);await getAuthorized(userId,projectId,id);return repository.update(projectId,id,input)}
+export async function remove(userId:string,projectId:string,id:string){await requireProjectWriteAccess(userId,projectId);const row=await getAuthorized(userId,projectId,id);if(row.type!=="CUSTOM"&&row.type!=="APPENDIX")throw new AppError(409,"SYSTEM_DOCUMENT_PROTECTED","Standard project documents cannot be deleted");await repository.remove(id)}

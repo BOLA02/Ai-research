@@ -1,0 +1,11 @@
+import type { RequestHandler } from "express";
+import { parse, uuidSchema } from "../../shared/validation";
+import { createChapterSchema, updateChapterSchema } from "./chapter.validation";
+import * as service from "./chapter.service";
+const one=(value:string|string[]|undefined)=>Array.isArray(value)?value[0]:value;
+const ids=(params:Record<string,string|string[]>)=>({projectId:parse(uuidSchema,one(params.projectId)),chapterId:params.chapterId?parse(uuidSchema,one(params.chapterId)):""});
+export const list:RequestHandler=async(req,res)=>res.json({success:true,data:{chapters:await service.list(req.user!.id,ids(req.params).projectId)}});
+export const get:RequestHandler=async(req,res)=>{const x=ids(req.params);res.json({success:true,data:{chapter:await service.get(req.user!.id,x.projectId,x.chapterId)}})};
+export const create:RequestHandler=async(req,res)=>res.status(201).json({success:true,data:{chapter:await service.create(req.user!.id,ids(req.params).projectId,parse(createChapterSchema,req.body))}});
+export const update:RequestHandler=async(req,res)=>{const x=ids(req.params);res.json({success:true,data:{chapter:await service.update(req.user!.id,x.projectId,x.chapterId,parse(updateChapterSchema,req.body))}})};
+export const remove:RequestHandler=async(req,res)=>{const x=ids(req.params);await service.remove(req.user!.id,x.projectId,x.chapterId);res.status(204).send()};

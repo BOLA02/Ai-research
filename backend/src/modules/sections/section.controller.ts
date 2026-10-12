@@ -1,0 +1,11 @@
+import type { RequestHandler } from "express";
+import { parse, uuidSchema } from "../../shared/validation";
+import { createSectionSchema, updateSectionSchema } from "./section.validation";
+import * as service from "./section.service";
+const one=(value:string|string[]|undefined)=>Array.isArray(value)?value[0]:value;
+const ids=(params:Record<string,string|string[]>)=>({projectId:parse(uuidSchema,one(params.projectId)),chapterId:parse(uuidSchema,one(params.chapterId)),sectionId:params.sectionId?parse(uuidSchema,one(params.sectionId)):""});
+export const list:RequestHandler=async(req,res)=>{const x=ids(req.params);res.json({success:true,data:{sections:await service.list(req.user!.id,x.projectId,x.chapterId)}})};
+export const get:RequestHandler=async(req,res)=>{const x=ids(req.params);res.json({success:true,data:{section:await service.get(req.user!.id,x.projectId,x.chapterId,x.sectionId)}})};
+export const create:RequestHandler=async(req,res)=>{const x=ids(req.params);res.status(201).json({success:true,data:{section:await service.create(req.user!.id,x.projectId,x.chapterId,parse(createSectionSchema,req.body))}})};
+export const update:RequestHandler=async(req,res)=>{const x=ids(req.params);res.json({success:true,data:{section:await service.update(req.user!.id,x.projectId,x.chapterId,x.sectionId,parse(updateSectionSchema,req.body))}})};
+export const remove:RequestHandler=async(req,res)=>{const x=ids(req.params);await service.remove(req.user!.id,x.projectId,x.chapterId,x.sectionId);res.status(204).send()};

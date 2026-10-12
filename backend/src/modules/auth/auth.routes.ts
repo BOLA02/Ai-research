@@ -1,0 +1,2 @@
+import {Router} from "express";import rateLimit from "express-rate-limit";import {requireAuth} from "../../middleware/auth";import {login,logout,me,signup} from "./auth.controller";
+export const authRouter=Router();const limiter=rateLimit({windowMs:15*60*1000,limit:10,standardHeaders:"draft-8",legacyHeaders:false,message:{success:false,message:"Too many attempts. Please try again later.",code:"AUTH_RATE_LIMITED"}});authRouter.post("/signup",limiter,signup);authRouter.post("/login",limiter,login);authRouter.post("/logout",logout);authRouter.get("/me",requireAuth,me);

@@ -1,0 +1,2 @@
+"use client";import {useParams}from"next/navigation";import {ProjectWorkspace} from "@/components/project-workspace";import {ProtectedRoute} from "@/components/protected-route";import{ProjectContentProvider}from"@/lib/project-content";
+export default function ProjectLayout({children}:{children:React.ReactNode}){const{projectId}=useParams<{projectId:string}>();return <ProtectedRoute><ProjectContentProvider projectId={projectId}><ProjectWorkspace>{children}</ProjectWorkspace></ProjectContentProvider></ProtectedRoute>}

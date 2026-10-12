@@ -1,0 +1,1 @@
+export default function Page(){return <div className="document-area"><div className="eyebrow">Project checks</div><h1>Validation</h1><p className="muted">Validation is a local prototype view. It will use current project records when backend checks are connected.</p></div>}

@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { requireAuth } from "../../middleware/auth";
+import { create, getOne, list, remove, update } from "./project.controller";
+export const projectRouter = Router();
+projectRouter.use(requireAuth);
+projectRouter.get("/", list);
+projectRouter.post("/", create);
+projectRouter.get("/:projectId", getOne);
+projectRouter.patch("/:projectId", update);
+projectRouter.delete("/:projectId", remove);

@@ -1,0 +1,29 @@
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js generated files
+.next/
+**/.next/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# TypeScript generated cache
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Local editor files (optional)
+.vscode/
