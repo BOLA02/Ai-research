@@ -70,6 +70,8 @@ export type ReportTemplate = {
   id: string;
   name: string;
   institution: string;
+  /** City, shown under the institution on the cover page. */
+  location: string;
   department: string;
   programme: string;
   projectType: "DESIGN" | "MAINTENANCE";

@@ -90,6 +90,15 @@ model Project {
   projectType    String?           @db.VarChar(100)
   referenceStyle String?           @db.VarChar(30)
   templateId     String?           @db.VarChar(60)
+  studentName          String?     @db.VarChar(200)
+  registrationNumber   String?     @db.VarChar(60)
+  supervisorNames      String?     @db.VarChar(500)
+  coordinatorName      String?     @db.VarChar(200)
+  hodName              String?     @db.VarChar(200)
+  externalExaminerName String?     @db.VarChar(200)
+  school               String?     @db.VarChar(200)
+  college              String?     @db.VarChar(200)
+  graduationYear       Int?
   ownerId        String            @db.Uuid
   createdAt      DateTime          @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime          @updatedAt @db.Timestamptz(6)

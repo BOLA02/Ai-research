@@ -23,7 +23,7 @@ function FigureCard({ figure, number }: { figure: ApiFigure; number?: number }) 
   const upload = async (chosen?: File) => {
     if (!chosen) return;
     setError("");
-    if (!["image/png", "image/jpeg", "image/webp"].includes(chosen.type)) return setError("Use a PNG, JPEG or WebP image.");
+    if (!["image/png", "image/jpeg"].includes(chosen.type)) return setError("Use a PNG or JPEG image.");
     if (chosen.size > MAX_BYTES) return setError("Images can be up to 3 MB.");
     try {
       await uploadFigureImage(figure.id, chosen);
@@ -61,10 +61,10 @@ function FigureCard({ figure, number }: { figure: ApiFigure; number?: number }) 
       ) : (
         <button type="button" className="pf-drop" onClick={() => file.current?.click()} style={{ cursor: "pointer", background: "transparent" }}>
           <ImagePlus size={22} aria-hidden />
-          <span>Add the image<br /><small>PNG, JPEG or WebP, up to 3 MB</small></span>
+          <span>Add the image<br /><small>PNG or JPEG, up to 3 MB</small></span>
         </button>
       )}
-      <input ref={file} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />
+      <input ref={file} type="file" accept="image/png,image/jpeg" hidden onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />
       {error && <div className="pf-alert" role="alert">{error}</div>}
 
       <div>

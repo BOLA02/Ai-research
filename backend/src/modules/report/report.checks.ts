@@ -3,15 +3,23 @@ import type { ReportTemplate, SectionTemplate } from "../../templates";
 import type { SectionInfo } from "./report.numbering";
 
 export type Severity = "error" | "warning" | "info" | "ok";
-export type CheckLink = { kind: "section" | "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" };
+export type CheckLink = { kind: "section" | "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" | "details" };
 export type Check = { id: string; severity: Severity; title: string; detail: string; link?: CheckLink };
 
 type DocumentRow = { id: string; type: string; title: string; content: string; isEnabled: boolean };
 type AssetRow = { id: string; label: string; caption: string; sectionId: string | null; sourceNote: string | null };
 type FigureRow = AssetRow & { isOriginal: boolean; mimeType: string | null };
 
+export type ProjectDetails = {
+  studentName: string | null;
+  registrationNumber: string | null;
+  supervisorNames: string | null;
+  hodName: string | null;
+};
+
 export type CheckInput = {
   style: ReferenceStyle;
+  details?: ProjectDetails;
   template: ReportTemplate | undefined;
   documents: DocumentRow[];
   sections: SectionInfo[];
@@ -130,6 +138,21 @@ export function runChecks(input: CheckInput): Check[] {
     checks.push({ id: "figures-attribution", severity: "error", title: `${unattributed.length} imported figure${unattributed.length === 1 ? " has" : "s have"} no source`, detail: `Your department requires every imported figure to be cited. ${list(unattributed.map((figure) => figure.label))}.`, link: { kind: "tool", tool: "figures" } });
   const noImage = figures.filter((figure) => !figure.mimeType);
   if (noImage.length) checks.push({ id: "figures-image", severity: "warning", title: `${noImage.length} figure${noImage.length === 1 ? " has" : "s have"} no image yet`, detail: list(noImage.map((figure) => figure.label)), link: { kind: "tool", tool: "figures" } });
+
+  /* Who the report is by: the cover, declaration and approval pages depend on it. */
+  if (input.details) {
+    const missing = [
+      !input.details.studentName && "your name",
+      !input.details.registrationNumber && "your registration number",
+      !input.details.supervisorNames && "your supervisor's name",
+      !input.details.hodName && "your head of department's name",
+    ].filter(Boolean) as string[];
+    checks.push(
+      missing.length
+        ? { id: "project-details", severity: "warning", title: "The cover and approval pages need more details", detail: `Add ${list(missing as string[])}.`, link: { kind: "tool", tool: "details" } }
+        : { id: "project-details", severity: "ok", title: "Your project details are filled in", detail: "" },
+    );
+  }
 
   /* Structure and content. */
   const tooDeep = sections.filter((section) => section.depth > 2);

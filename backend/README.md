@@ -27,3 +27,10 @@ Under `/api/projects/:projectId`:
 - `report/checks`: problems found against the department's rules (for example, fewer than five related works).
 
 Markers in text: `[@key]` or `[@key, p. 33]` or `[@a; @b]` for sources, `[fig:label]` for a figure and `[tab:label]` for a table. Keys and labels cannot be renamed once created, because the text refers to them.
+
+## Project details and Word export
+
+- A project stores the details its cover, declaration and approval pages need: `studentName`, `registrationNumber`, `supervisorNames`, `coordinatorName`, `hodName`, `externalExaminerName`, `school`, `college` and `graduationYear`. A `PATCH` changes only the fields it names.
+- `GET /api/projects/:projectId/export/docx` returns the report as a Word document that follows the department template's format rules: A4, Times New Roman 12, 1.5 spacing, left margin 25 mm and others 20 mm, justified text, page numbers top right, roman numerals for the front matter and 1, 2, 3 for the body, and each chapter on a new page. It includes the cover and title pages, the declaration and approval pages filled from the project details, a table of contents and lists of figures and tables built from bookmarks, every chapter with numbered figures and tables, the references in the chosen style and any appendices.
+- The table of contents and lists use page-reference fields. The document asks Word to update fields when it opens, which fills in the page numbers.
+- Figure images are PNG or JPEG, up to 3 MB.

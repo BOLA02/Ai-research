@@ -3,17 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Calculator, CheckSquare, Eye, Image as ImageIcon, Menu, Plus, Table2, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Calculator, CheckSquare, Download, IdCard, Image as ImageIcon, Menu, Plus, Table2, X } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, isStarted, writingItems, type SectionNode } from "@/lib/workspace/outline";
 
 const tools = [
+  { label: "Project details", slug: "details", icon: IdCard },
   { label: "References", slug: "references", icon: BookOpen },
   { label: "Figures", slug: "figures", icon: ImageIcon },
   { label: "Tables", slug: "tables", icon: Table2 },
   { label: "Calculations", slug: "calculations", icon: Calculator },
   { label: "Checks", slug: "validation", icon: CheckSquare },
-  { label: "Preview", slug: "preview", icon: Eye },
+  { label: "Export", slug: "export", icon: Download },
 ];
 
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {

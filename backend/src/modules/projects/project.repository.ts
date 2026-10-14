@@ -25,6 +25,15 @@ type CreateInput = {
   projectType?: string;
   referenceStyle?: string;
   templateId?: string;
+  studentName?: string | null;
+  registrationNumber?: string | null;
+  supervisorNames?: string | null;
+  coordinatorName?: string | null;
+  hodName?: string | null;
+  externalExaminerName?: string | null;
+  school?: string | null;
+  college?: string | null;
+  graduationYear?: number | null;
 };
 
 type Tx = Prisma.TransactionClient;
@@ -97,6 +106,15 @@ export function updateById(
     programme: string;
     projectType: string;
     referenceStyle: string;
+    studentName: string | null;
+    registrationNumber: string | null;
+    supervisorNames: string | null;
+    coordinatorName: string | null;
+    hodName: string | null;
+    externalExaminerName: string | null;
+    school: string | null;
+    college: string | null;
+    graduationYear: number | null;
   }>,
 ) {
   return prisma.project.update({ where: { id: projectId }, data });

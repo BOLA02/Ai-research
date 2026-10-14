@@ -10,5 +10,5 @@ figureRouter.post("/:projectId/figures", create);
 figureRouter.patch("/:projectId/figures/:figureId", update);
 figureRouter.delete("/:projectId/figures/:figureId", remove);
 figureRouter.get("/:projectId/figures/:figureId/image", getImage);
-figureRouter.put("/:projectId/figures/:figureId/image", express.raw({ type: ["image/png", "image/jpeg", "image/webp"], limit: MAX_IMAGE_BYTES }), uploadImage);
+figureRouter.put("/:projectId/figures/:figureId/image", express.raw({ type: ["image/png", "image/jpeg"], limit: MAX_IMAGE_BYTES }), uploadImage);
 figureRouter.delete("/:projectId/figures/:figureId/image", deleteImage);

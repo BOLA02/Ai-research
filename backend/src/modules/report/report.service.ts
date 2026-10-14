@@ -30,6 +30,7 @@ export async function getChecks(userId: string, projectId: string) {
   const checks = runChecks({
     style: index.style,
     template,
+    details: context.project,
     documents: context.documents,
     sections: context.sections,
     blocks: context.blocks,

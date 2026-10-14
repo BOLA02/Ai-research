@@ -133,10 +133,11 @@ export function DocumentPage() {
             <div className="pf-paper" style={{ textAlign: "center", fontFamily: "var(--pf-serif)", fontWeight: 700, lineHeight: 1.9, fontSize: doc.type === "COVER_PAGE" ? 16 : 14 }}>
               <p style={{ margin: "0 0 28px" }}>{project.title.toUpperCase()}</p>
               <p style={{ margin: 0 }}>RESEARCH PROJECT BY</p>
-              <p style={{ margin: "0 0 28px" }}>{user ? `${user.firstName} ${user.lastName}`.toUpperCase() : "YOUR NAME"}<br />YOUR REGISTRATION NUMBER</p>
-              <p style={{ margin: "0 0 28px" }}>{(project.department || "").toUpperCase()}<br />{(project.institution || "").toUpperCase()}</p>
-              <p style={{ margin: 0 }}>IN PARTIAL FULFILMENT OF THE REQUIREMENTS FOR THE AWARD OF HIGHER NATIONAL DIPLOMA</p>
-              <p style={{ margin: "28px 0 0" }}>{new Date().getFullYear()}</p>
+              <p style={{ margin: "0 0 28px" }}>{(project.studentName || (user ? `${user.firstName} ${user.lastName}` : "YOUR NAME")).toUpperCase()}<br />{(project.registrationNumber || "YOUR REGISTRATION NUMBER").toUpperCase()}</p>
+              <p style={{ margin: "0 0 28px" }}>{[project.department && `DEPARTMENT OF ${project.department.replace(/^department of /i, "").toUpperCase()}`, project.school, project.college, project.institution].filter(Boolean).map((line) => String(line).toUpperCase()).map((line, index) => <span key={index}>{index > 0 && <br />}{line}</span>)}</p>
+              <p style={{ margin: 0 }}>IN PARTIAL FULFILMENT OF THE REQUIREMENTS FOR THE AWARD OF {project.programme === "ND" ? "NATIONAL DIPLOMA" : "HIGHER NATIONAL DIPLOMA"}</p>
+              <p style={{ margin: "28px 0 0" }}>{project.graduationYear ?? new Date().getFullYear()}</p>
+              {(!project.studentName || !project.registrationNumber) && <p style={{ margin: "24px 0 0", fontFamily: "var(--pf-sans)", fontWeight: 500, fontSize: 13 }}><Link href={`/projects/${project.id}/details`}>Add your name and registration number</Link></p>}
             </div>
           )}
         </div>

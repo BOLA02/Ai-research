@@ -83,3 +83,11 @@ test("errors sort before warnings, warnings before passes", () => {
   const ranks = checks.map((check) => rank[check.severity]);
   assert.deepEqual(ranks, [...ranks].sort((a, b) => a - b));
 });
+
+test("asks for the details that the cover and approval pages need", () => {
+  const missing = runChecks({ ...input(), details: { studentName: "A", registrationNumber: null, supervisorNames: null, hodName: "B" } });
+  assert.equal(byId(missing, "project-details")?.severity, "warning");
+  assert.match(byId(missing, "project-details")!.detail, /registration number.*supervisor/);
+  const complete = runChecks({ ...input(), details: { studentName: "A", registrationNumber: "R", supervisorNames: "S", hodName: "H" } });
+  assert.equal(byId(complete, "project-details")?.severity, "ok");
+});

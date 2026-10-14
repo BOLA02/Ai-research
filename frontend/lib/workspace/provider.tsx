@@ -21,6 +21,7 @@ type Workspace = {
   /** Waits until everything typed so far has reached the server. */
   flushSaves: () => Promise<void>;
   setReferenceStyle: (style: ReferenceStyle) => Promise<void>;
+  updateProject: (input: Partial<Omit<ApiProject, "id" | "createdAt" | "updatedAt" | "templateId">>) => Promise<void>;
   createSource: (input: SourceInput) => Promise<ApiSource>;
   updateSource: (id: string, input: Partial<SourceInput>) => Promise<void>;
   deleteSource: (id: string) => Promise<void>;
@@ -184,6 +185,10 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
       flushSaves,
       setContent,
       reload,
+      async updateProject(input) {
+        const data = await api<{ project: ApiProject }>(`/projects/${projectId}`, { method: "PATCH", body: JSON.stringify(input) });
+        setProject(data.project);
+      },
       async setReferenceStyle(style) {
         const data = await api<{ project: ApiProject }>(`/projects/${projectId}`, { method: "PATCH", body: JSON.stringify({ referenceStyle: style }) });
         setProject(data.project);

@@ -48,12 +48,7 @@ export const FORMAT: FormatRules = {
 
 const DECLARATION = `I, ______________________ hereby declare that this research project titled "{{title}}" was carried out by me in the Department of Electrical and Electronic Engineering under the supervision of ______________________ in partial fulfilment of the requirement for the award of Higher National Diploma (HND) in Electrical and Electronic Engineering and to the best of my knowledge it has not been presented anywhere for the award of any degree or certificate. However, authors whose works have been referred to in this project have been duly acknowledged.`;
 
-const APPROVAL = `This is to certify that this research project titled "{{title}}" by ______________________ with registration number ______________________ meets the regulations governing the preparation and presentation of research project in Kaduna Polytechnic.
-
-Project Supervisor: ______________________ Date: __________
-Project Coordinator: ______________________ Date: __________
-Head of Department: ______________________ Date: __________
-External Examiner: ______________________ Date: __________`;
+const APPROVAL = `This is to certify that this research project titled "{{title}}" by ______________________ with registration number ______________________ meets the regulations governing the preparation and presentation of research project in Kaduna Polytechnic.`;
 
 const documents: DocumentTemplate[] = [
   {
@@ -666,6 +661,7 @@ const milestones: Milestone[] = [
 
 const base = {
   institution: "Kaduna Polytechnic",
+  location: "Kaduna",
   department: "Electrical and Electronic Engineering",
   programme: "HND",
   referenceStyle: "IEEE" as const,

@@ -6,10 +6,9 @@ import * as repository from "./figure.repository";
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 
 /** Checks the first bytes so a file cannot claim to be an image it is not. */
-export function detectImageType(bytes: Buffer): "image/png" | "image/jpeg" | "image/webp" | null {
+export function detectImageType(bytes: Buffer): "image/png" | "image/jpeg" | null {
   if (bytes.length > 12 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
   if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
-  if (bytes.length > 12 && bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP") return "image/webp";
   return null;
 }
 
@@ -59,7 +58,7 @@ export async function saveImage(userId: string, projectId: string, id: string, b
   if (bytes.length === 0) throw new AppError(400, "IMAGE_REQUIRED", "Send an image file");
   if (bytes.length > MAX_IMAGE_BYTES) throw new AppError(413, "IMAGE_TOO_LARGE", "Images can be up to 3 MB");
   const type = detectImageType(bytes);
-  if (!type) throw new AppError(415, "IMAGE_TYPE_UNSUPPORTED", "Use a PNG, JPEG or WebP image");
+  if (!type) throw new AppError(415, "IMAGE_TYPE_UNSUPPORTED", "Use a PNG or JPEG image");
   return repository.withImageFlag(await repository.setImage(id, bytes, type));
 }
 

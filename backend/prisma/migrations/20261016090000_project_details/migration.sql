@@ -1,0 +1,9 @@
+ALTER TABLE "Project" ADD COLUMN "studentName" VARCHAR(200);
+ALTER TABLE "Project" ADD COLUMN "registrationNumber" VARCHAR(60);
+ALTER TABLE "Project" ADD COLUMN "supervisorNames" VARCHAR(500);
+ALTER TABLE "Project" ADD COLUMN "coordinatorName" VARCHAR(200);
+ALTER TABLE "Project" ADD COLUMN "hodName" VARCHAR(200);
+ALTER TABLE "Project" ADD COLUMN "externalExaminerName" VARCHAR(200);
+ALTER TABLE "Project" ADD COLUMN "school" VARCHAR(200);
+ALTER TABLE "Project" ADD COLUMN "college" VARCHAR(200);
+ALTER TABLE "Project" ADD COLUMN "graduationYear" INTEGER;

@@ -9,6 +9,15 @@ export type ApiProject = {
   projectType: string | null;
   referenceStyle: string | null;
   templateId: string | null;
+  studentName: string | null;
+  registrationNumber: string | null;
+  supervisorNames: string | null;
+  coordinatorName: string | null;
+  hodName: string | null;
+  externalExaminerName: string | null;
+  school: string | null;
+  college: string | null;
+  graduationYear: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -172,5 +181,5 @@ export type ReportIndex = {
 };
 
 export type Severity = "error" | "warning" | "info" | "ok";
-export type CheckLink = { kind: "section"; id: string } | { kind: "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" };
+export type CheckLink = { kind: "section"; id: string } | { kind: "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" | "details" };
 export type Check = { id: string; severity: Severity; title: string; detail: string; link?: CheckLink };
