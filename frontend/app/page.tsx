@@ -1,13 +1,95 @@
 import Link from "next/link";
-import {ArrowRight,BookOpen,FolderKanban,ShieldCheck} from "lucide-react";
+import { ArrowRight, BookOpenText, Calculator, CheckSquare, Download, Image as ImageIcon, PenLine, Smartphone, Compass } from "lucide-react";
 
-export default function Landing(){return <>
- <header className="landing-container landing-nav"><strong>ProjectForge</strong><nav><a href="#workflow">How it works</a><a href="#capabilities">Capabilities</a><a href="/help">Help</a></nav><Link className="btn btn-primary" href="/dashboard">Open workspace <ArrowRight size={16}/></Link></header>
- <main>
-  <section className="landing-container landing-hero"><div className="eyebrow">For Electrical &amp; Electronic Engineering</div><h1>Build your final-year engineering project with structure, research, citations and validation.</h1><p className="muted">ProjectForge is a structured academic workspace for planning, documenting and checking engineering projects—without turning your work into a generic chatbot conversation.</p><div className="landing-actions"><Link className="btn btn-primary" href="/dashboard">Start a project <ArrowRight size={16}/></Link><a className="btn btn-secondary" href="#workflow">Explore workflow</a></div></section>
-  <section id="workflow" style={{background:"#edf2f8",padding:"64px 0"}}><div className="container"><div className="eyebrow">A clearer way to work</div><h2 style={{fontSize:32,letterSpacing:"-.035em",margin:"8px 0 30px"}}>From brief to submission-ready structure</h2><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:16}}>{[["01","Set up your project","Capture your institution, requirements and project type."],["02","Build chapter by chapter","Keep sections, figures, tables and calculations in context."],["03","Validate your work","Review concrete structure, citation and formatting checks."]].map(([n,t,d])=><div className="card" style={{padding:22}} key={n}><div className="eyebrow">{n}</div><h3>{t}</h3><p className="muted" style={{lineHeight:1.55,fontSize:14}}>{d}</p></div>)}</div></div></section>
-  <section id="capabilities" className="container" style={{padding:"78px 24px"}}><div className="eyebrow">Core capabilities</div><h2 style={{fontSize:32,margin:"8px 0 28px",letterSpacing:"-.035em"}}>A workspace built for academic engineering work.</h2><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:28}}>{[[FolderKanban,"Project structure","Follow your department's report structure, chapter by chapter, with clear progress."],[BookOpen,"References","Cite in IEEE or APA, and switch any time without retyping."],[ShieldCheck,"Validation","See what's missing against your department's rules before you submit."]].map(([Icon,title,copy])=>{const I=Icon as typeof FolderKanban;return <div key={title as string}><I color="#174ea6"/><h3>{title as string}</h3><p className="muted" style={{lineHeight:1.55}}>{copy as string}</p></div>})}</div></section>
-  <section style={{background:"#17243a",color:"white",padding:"58px 0"}}><div className="container" style={{display:"flex",justifyContent:"space-between",gap:25,alignItems:"center",flexWrap:"wrap"}}><div><div className="eyebrow" style={{color:"#aac8ff"}}>ProjectForge</div><h2 style={{margin:"8px 0",fontSize:30}}>Bring order to your final-year project.</h2></div><Link className="btn" style={{background:"white",color:"#17243a"}} href="/dashboard">Open workspace <ArrowRight size={16}/></Link></div></section>
- </main>
- <footer className="container" style={{padding:"24px",fontSize:13,color:"#687386",display:"flex",justifyContent:"space-between"}}><span>ProjectForge</span><span>Academic project workspace</span></footer>
- </>}
+const steps = [
+  ["1", "Pick your project type", "Design and construction, or maintenance and repair. Every page, chapter and section your department asks for is set up for you."],
+  ["2", "Write one section at a time", "A short step-by-step guide shows what examiners look for in each section and the questions to answer."],
+  ["3", "Download a finished Word document", "Paper size, margins, font, spacing, page numbers and the table of contents are all done for you."],
+];
+
+const features = [
+  [Compass, "Guided writing", "A spotlight guide walks you through every section, one step at a time. It never writes your report for you."],
+  [BookOpenText, "References", "Cite in IEEE or APA and switch any time. Citations and the reference list reformat by themselves."],
+  [ImageIcon, "Figures and tables", "Upload a diagram or a phone photo. Figures and tables are numbered for you in the order they appear."],
+  [Calculator, "Worked calculations", "Enter your values and formulas. The app works out each step and shows the working the way examiners expect."],
+  [CheckSquare, "Checks", "See what is missing against your department's rules before you submit, from empty sections to unmatched citations."],
+  [Download, "Book view and export", "Read your report page by page like a printed book, then download the Word file."],
+] as const;
+
+export default function Landing() {
+  return (
+    <div className="lp">
+      <header className="lp-nav">
+        <Link href="/" className="lp-brand"><span><PenLine size={16} aria-hidden /></span> ProjectForge</Link>
+        <nav aria-label="Main">
+          <a href="#how">How it works</a>
+          <a href="#features">Features</a>
+          <Link href="/help">Help</Link>
+        </nav>
+        <Link className="lp-btn lp-btn-primary" href="/dashboard">Open the app <ArrowRight size={15} aria-hidden /></Link>
+      </header>
+
+      <main>
+        <section className="lp-hero">
+          <div>
+            <p className="lp-eyebrow">For Electrical and Electronic Engineering HND students</p>
+            <h1>Write your final-year report with a guide at every step</h1>
+            <p className="lp-lede">ProjectForge sets up your report the way your department wants it, tells you what to write in each section, and builds the finished Word document for you. Made to work on your phone.</p>
+            <div className="lp-actions">
+              <Link className="lp-btn lp-btn-primary lp-btn-lg" href="/signup">Start your report <ArrowRight size={16} aria-hidden /></Link>
+              <Link className="lp-btn lp-btn-lg" href="/help#video">Watch how it works</Link>
+            </div>
+            <p className="lp-small">Free to try. Follows the Kaduna Polytechnic guidelines.</p>
+          </div>
+          <Link href="/help#video" className="lp-preview" aria-label="Watch the walkthrough video">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/help/poster.jpg" alt="The ProjectForge workspace with a guide open beside the writing area" width={1280} height={720} />
+            <span className="lp-play" aria-hidden>Watch the 3 minute tour</span>
+          </Link>
+        </section>
+
+        <section id="how" className="lp-band">
+          <div className="lp-wrap">
+            <p className="lp-eyebrow">How it works</p>
+            <h2>From a blank page to a finished report</h2>
+            <ol className="lp-steps">
+              {steps.map(([n, title, copy]) => (
+                <li key={n}><span>{n}</span><h3>{title}</h3><p>{copy}</p></li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section id="features" className="lp-wrap lp-features">
+          <p className="lp-eyebrow">What you get</p>
+          <h2>Everything a project report needs, in one place</h2>
+          <div className="lp-grid">
+            {features.map(([Icon, title, copy]) => (
+              <article key={title}><Icon size={22} aria-hidden /><h3>{title}</h3><p>{copy}</p></article>
+            ))}
+          </div>
+        </section>
+
+        <section className="lp-wrap lp-phone">
+          <Smartphone size={30} aria-hidden />
+          <div>
+            <h2>Built for your phone</h2>
+            <p>Write, add figures from your camera, and read your report like a book, all from a phone. Everything saves by itself as you type.</p>
+          </div>
+        </section>
+
+        <section className="lp-cta">
+          <div className="lp-wrap lp-cta-inner">
+            <h2>Bring order to your final-year project</h2>
+            <Link className="lp-btn lp-btn-light lp-btn-lg" href="/signup">Create your account <ArrowRight size={16} aria-hidden /></Link>
+          </div>
+        </section>
+      </main>
+
+      <footer className="lp-wrap lp-foot">
+        <span>ProjectForge</span>
+        <span><Link href="/help">Help</Link> · <Link href="/login">Sign in</Link></span>
+      </footer>
+    </div>
+  );
+}
