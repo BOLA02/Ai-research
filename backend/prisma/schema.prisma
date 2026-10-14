@@ -65,6 +65,7 @@ model User {
   memberships  ProjectMember[]
   sessions     Session[]
   aiUsage      AiUsage[]
+  passwordResets PasswordReset[]
 
   @@index([email, isActive])
 }
@@ -283,4 +284,17 @@ model Calculation {
   @@unique([projectId, label])
   @@index([projectId])
   @@index([sectionId])
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime  @db.Timestamptz(6)
+  usedAt    DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

@@ -1,7 +1,8 @@
 import type { RequestHandler } from "express";
 import { env } from "../../config/env";
 import { parse } from "../../shared/validation";
-import { loginSchema, signupSchema } from "./auth.validation";
+import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from "./auth.validation";
+import { requestPasswordReset, resetPassword } from "./password-reset";
 import * as service from "./auth.service";
 const cookieOptions = {
   httpOnly: true,
@@ -44,4 +45,15 @@ export const logout: RequestHandler = async (req, res) => {
 };
 export const me: RequestHandler = (req, res) => {
   res.json({ success: true, data: { user: req.user } });
+};
+export const forgotPassword: RequestHandler = async (req, res) => {
+  const input = parse(forgotPasswordSchema, req.body);
+  await requestPasswordReset(input.email);
+  res.json({ success: true, data: {} });
+};
+export const resetPasswordHandler: RequestHandler = async (req, res) => {
+  const input = parse(resetPasswordSchema, req.body);
+  await resetPassword(input.token, input.password);
+  res.clearCookie(env.SESSION_COOKIE_NAME, cookieOptions);
+  res.json({ success: true, data: {} });
 };

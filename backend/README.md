@@ -55,3 +55,7 @@ A calculation is a set of known values and a list of steps. The server does the 
 - Formulas support `+ − × ÷ ^`, brackets and `sqrt`, `parallel`, `e12` and `e24` (nearest standard resistor value), `sin`, `cos`, `tan`, `ln`, `log10`, `exp`, `abs`, `min`, `max`, `pow`, `round`, `ceil`, `floor`. A step can use the results of earlier steps. The formula is read into a tree and evaluated. It is never run as code (`src/calc/`).
 - In text, `[calc:label]` on a line of its own puts the working there. A calculation not mentioned in the text is written at the end of its section. In the Word export the lines are indented, kept together on the page, and variable subscripts such as `V_pk` are lowered.
 - The checks report calculations that have mistakes (an error) or sit in no section (a warning).
+
+## Deploying
+
+See [DEPLOY.md](../DEPLOY.md) for hosting on Vercel (website) and Railway (API and database), including the password-reset email setup.

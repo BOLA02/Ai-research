@@ -7,6 +7,12 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+  // Number of reverse proxies in front of the API (Railway adds one). Needed so rate limits see the real client address.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
+  // Password-reset email. Without RESEND_API_KEY the link is printed to the server log instead (development only).
+  RESEND_API_KEY: z.string().optional(),
+  MAIL_FROM: z.string().min(3).default("ProjectForge <onboarding@resend.dev>"),
+  PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
   SESSION_TTL_HOURS: z.coerce.number().positive().max(168).default(8),
   SESSION_COOKIE_NAME: z.string().min(1).default("pf_session"),
   // The writing coach is switched on by setting an API key. The SDK reads ANTHROPIC_BASE_URL itself.
@@ -26,4 +32,7 @@ if (!parsed.success) {
   );
   throw new Error("Invalid environment configuration");
 }
+const production = parsed.data.NODE_ENV === "production";
+if (production && !process.env.FRONTEND_URL && !process.env.FRONTEND_ORIGIN)
+  throw new Error("FRONTEND_URL must be set in production");
 export const env = parsed.data;
