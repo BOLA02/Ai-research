@@ -67,6 +67,7 @@ export async function reviewText(userId: string, projectId: string, request: { k
     guidance = template.documents.find((row) => row.type === doc.type)?.guidance ?? null;
   }
 
+  raw = raw.replace(/^\{(?:left|right|center|justify)\}[ \t]?/gm, "");
   const words = wordCount(raw);
   if (words < MIN_WORDS) throw new AppError(400, "TEXT_TOO_SHORT", `Write at least ${MIN_WORDS} words first, then ask for feedback. The questions beside the editor can help you start.`);
   if (words > MAX_WORDS) throw new AppError(400, "TEXT_TOO_LONG", `This part is over ${MAX_WORDS} words. Review one section at a time.`);

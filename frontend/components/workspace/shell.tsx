@@ -8,13 +8,13 @@ import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, isStarted, writingItems, type SectionNode } from "@/lib/workspace/outline";
 
 const tools = [
-  { label: "Project details", slug: "details", icon: IdCard },
-  { label: "References", slug: "references", icon: BookOpen },
-  { label: "Figures", slug: "figures", icon: ImageIcon },
-  { label: "Tables", slug: "tables", icon: Table2 },
-  { label: "Calculations", slug: "calculations", icon: Calculator },
-  { label: "Checks", slug: "validation", icon: CheckSquare },
-  { label: "Export", slug: "export", icon: Download },
+  { label: "Project details", slug: "details", tip: "Your name, registration number and supervisor, printed on the cover and approval pages", icon: IdCard },
+  { label: "References", slug: "references", tip: "Sources you cite, in IEEE or APA", icon: BookOpen },
+  { label: "Figures", slug: "figures", tip: "Diagrams and photos, numbered for you", icon: ImageIcon },
+  { label: "Tables", slug: "tables", tip: "Results and specifications, numbered for you", icon: Table2 },
+  { label: "Calculations", slug: "calculations", tip: "Work out values step by step and show the working", icon: Calculator },
+  { label: "Checks", slug: "validation", tip: "See what your department's guidelines still need", icon: CheckSquare },
+  { label: "Export", slug: "export", tip: "Download your report as a Word document", icon: Download },
 ];
 
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
@@ -102,8 +102,8 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 
             <div data-tour="tools">
             <div className="pf-group">Tools</div>
-            {tools.map(({ label, slug, icon: Icon }) => (
-              <Link key={slug} href={`${base}/${slug}`} className="pf-link" aria-current={current(`${base}/${slug}`)}>
+            {tools.map(({ label, slug, tip, icon: Icon }) => (
+              <Link key={slug} data-tip={tip} href={`${base}/${slug}`} className="pf-link" aria-current={current(`${base}/${slug}`)}>
                 <Icon size={15} aria-hidden /> {label}
               </Link>
             ))}

@@ -1,8 +1,8 @@
 import {
-  AlignmentType, Bookmark, BorderStyle, Document, Header, HeadingLevel, ImageRun, LeaderType, LineRuleType, NumberFormat, Packer,
-  PageNumber, PageReference, Paragraph, Table, TableCell, TableRow, TabStopType, TextRun, WidthType,
+  AlignmentType, Bookmark, BorderStyle, Document, Footer, Header, HeadingLevel, ImageRun, LeaderType, LineRuleType, NumberFormat, Packer,
+  PageNumber, PageReference, Paragraph, SectionType, Table, TableCell, TableRow, TabStopType, TextRun, WidthType,
 } from "docx";
-import { chapterWord, fillBlanks, fit, italicPieces, styledPieces, toParagraphs, toRoman } from "./export.util";
+import { chapterWord, fillBlanks, fit, italicPieces, parseUnits, styledPieces, toParagraphs, toRoman, type Align } from "./export.util";
 import type { CalcBlock, ExportModel, FigureBlock, FrontPage, SectionBlock, TableBlock } from "./export.model";
 
 const FONT = "Times New Roman";
@@ -28,14 +28,27 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
   const lineRuns = (lines: string[], options: { size?: number; italics?: boolean } = {}) =>
     lines.flatMap((line, index) => styledPieces(line).map((piece, i) => new TextRun({ text: piece.text, font: FONT, size: options.size ?? size, bold: piece.bold || undefined, italics: piece.italics || options.italics, underline: piece.underline ? {} : undefined, break: index > 0 && i === 0 ? 1 : 0 })));
 
+  const alignment = (align?: Align) => {
+    switch (align) {
+      case "left": return AlignmentType.LEFT;
+      case "right": return AlignmentType.RIGHT;
+      case "center": return AlignmentType.CENTER;
+      case "justify": return AlignmentType.JUSTIFIED;
+      default: return f.justified ? AlignmentType.JUSTIFIED : AlignmentType.LEFT;
+    }
+  };
+
   const textParagraphs = (text: string, spacing = body) =>
-    toParagraphs(text).map(
-      (lines) =>
-        new Paragraph({
-          alignment: f.justified ? AlignmentType.JUSTIFIED : AlignmentType.LEFT,
-          spacing: { line: spacing, lineRule: LineRuleType.AUTO, after: 240 },
-          children: lineRuns(lines),
-        }),
+    parseUnits(text).map((unit) =>
+      unit.kind === "para"
+        ? new Paragraph({ alignment: alignment(unit.align), spacing: { line: spacing, lineRule: LineRuleType.AUTO, after: 240 }, children: lineRuns(unit.lines) })
+        : new Paragraph({
+            alignment: alignment(unit.align),
+            spacing: { line: spacing, lineRule: LineRuleType.AUTO, after: 120 },
+            indent: { left: 567, hanging: 567 },
+            tabStops: [{ type: TabStopType.LEFT, position: 567 }],
+            children: [run(unit.marker), run("\t"), ...lineRuns([unit.text])],
+          }),
     );
 
   const centred = (text: string, options: { size?: number; bold?: boolean; after?: number; before?: number } = {}) =>
@@ -188,11 +201,11 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
     ];
   };
 
-  const chapterBlocks = model.chapters.flatMap((chapter) => {
+  const chapterChunks = model.chapters.map((chapter) => {
     const label = `CHAPTER ${chapterWord(chapter.number)}`;
     const bookmark = mark(`ch:${chapter.id}`, "ch", `${label}: ${chapter.title.toUpperCase()}`, 0, true);
     return [
-      new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: true, alignment: AlignmentType.CENTER, spacing: { after: 360, line: SINGLE }, children: [new Bookmark({ id: bookmark, children: [run(label, { bold: true }), new TextRun({ text: chapter.title.toUpperCase(), font: FONT, size, bold: true, break: 1 })] })] }),
+      new Paragraph({ heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { after: 360, line: SINGLE }, children: [new Bookmark({ id: bookmark, children: [run(label, { bold: true }), new TextRun({ text: chapter.title.toUpperCase(), font: FONT, size, bold: true, break: 1 })] })] }),
       ...chapter.sections.flatMap(sectionBlocks),
     ];
   });
@@ -211,15 +224,15 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
         }),
     );
     return [
-      new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: true, alignment: AlignmentType.CENTER, spacing: { after: 360, line: SINGLE }, children: [new Bookmark({ id: bookmark, children: [run("REFERENCES", { bold: true })] })] }),
+      new Paragraph({ heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { after: 360, line: SINGLE }, children: [new Bookmark({ id: bookmark, children: [run("REFERENCES", { bold: true })] })] }),
       ...(entries.length ? entries : [new Paragraph({ children: [run("No sources have been cited yet.", { italics: true })] })]),
     ];
   })();
 
-  const appendixBlocks = model.appendices.flatMap((appendix, index) => {
+  const appendixChunks = model.appendices.map((appendix, index) => {
     const label = `APPENDIX ${toRoman(index + 1)}: ${appendix.title.toUpperCase()}`;
     const bookmark = mark(`app:${appendix.id}`, "app", label, 0, true);
-    return [new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: true, alignment: AlignmentType.CENTER, spacing: { after: 360, line: SINGLE }, children: [new Bookmark({ id: bookmark, children: [run(label, { bold: true })] })] }), ...textParagraphs(appendix.text)];
+    return [new Paragraph({ heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { after: 360, line: SINGLE }, children: [new Bookmark({ id: bookmark, children: [run(label, { bold: true })] })] }), ...textParagraphs(appendix.text)];
   });
 
   /* The table of contents and lists need the bookmarks above, so the front matter is assembled last. */
@@ -235,7 +248,14 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
     }
   });
 
-  const header = (empty = false) => new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: empty ? [] : [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size })] })] });
+  /* Page numbers: the first page of every chapter (and of the preliminary pages) carries its number at the
+     bottom centre; every other page carries it at the top right. */
+  const numberRun = () => new TextRun({ children: [PageNumber.CURRENT], font: FONT, size });
+  const header = (empty = false) => new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: empty ? [] : [numberRun()] })] });
+  const footer = (empty = false) => new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: empty ? [] : [numberRun()] })] });
+
+  // Each chapter, the references and each appendix start a new page of their own, so each is a section.
+  const bodyChunks = [...chapterChunks, referencesBlocks, ...appendixChunks];
 
   const doc = new Document({
     creator: model.studentName || "ProjectForge",
@@ -253,14 +273,16 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
       { properties: { page: pageProps }, children: [...cover, ...flyLeaf] },
       {
         properties: { titlePage: true, page: { ...pageProps, pageNumbers: { start: 1, formatType: NumberFormat.LOWER_ROMAN } } },
-        headers: { default: header(), first: header(true) },
+        headers: { default: header(true), first: header(true) },
+        footers: { default: footer(), first: footer(true) },
         children: [...identityLines(f.titlePageFontSizePt, titleBookmark), ...frontBlocks],
       },
-      {
-        properties: { page: { ...pageProps, pageNumbers: { start: 1, formatType: NumberFormat.DECIMAL } } },
-        headers: { default: header() },
-        children: [...chapterBlocks, ...referencesBlocks, ...appendixBlocks],
-      },
+      ...bodyChunks.map((children, index) => ({
+        properties: { type: SectionType.NEXT_PAGE, titlePage: true, page: { ...pageProps, pageNumbers: index === 0 ? { start: 1, formatType: NumberFormat.DECIMAL } : { formatType: NumberFormat.DECIMAL } } },
+        headers: { default: header(), first: header(true) },
+        footers: { default: footer(true), first: footer() },
+        children,
+      })),
     ],
   });
 

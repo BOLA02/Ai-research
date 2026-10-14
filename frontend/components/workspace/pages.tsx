@@ -131,6 +131,60 @@ function GeneratedList({ kind }: { kind: "figures" | "tables" }) {
   );
 }
 
+/** The cover and title pages: your name and number are typed here and shown on the page as you type. */
+function CoverCard({ type }: { type: string }) {
+  const { project, updateProject } = useWorkspace();
+  const { user } = useAuth();
+  const [draft, setDraft] = useState<{ studentName: string; registrationNumber: string; graduationYear: string } | null>(null);
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  if (!project) return null;
+  const suggestion = user ? `${user.firstName} ${user.lastName}` : "";
+  const value = draft ?? { studentName: project.studentName ?? suggestion, registrationNumber: project.registrationNumber ?? "", graduationYear: String(project.graduationYear ?? new Date().getFullYear()) };
+  const change = (name: keyof typeof value, next: string) => {
+    setState("idle");
+    setDraft({ ...value, [name]: next });
+  };
+  const year = Number(value.graduationYear);
+  const yearOk = Number.isInteger(year) && year >= 1990 && year <= 2100;
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!yearOk) return setState("error");
+    setState("saving");
+    try {
+      await updateProject({ studentName: value.studentName.trim() || null, registrationNumber: value.registrationNumber.trim() || null, graduationYear: year });
+      setDraft(null);
+      setState("saved");
+    } catch {
+      setState("error");
+    }
+  };
+  const name = value.studentName.trim() || "YOUR NAME";
+  const number = value.registrationNumber.trim() || "YOUR REGISTRATION NUMBER";
+  return (
+    <>
+      <form className="pf-card" onSubmit={save} style={{ padding: 16, marginBottom: 16, display: "grid", gap: 12 }} aria-label="Your name on the cover">
+        <label className="pf-field"><span>Your full name</span><input id="cover-name" className="pf-input" value={value.studentName} onChange={(event) => change("studentName", event.target.value)} maxLength={200} autoComplete="name" /></label>
+        <label className="pf-field"><span>Registration number</span><input id="cover-reg" className="pf-input" value={value.registrationNumber} onChange={(event) => change("registrationNumber", event.target.value)} maxLength={60} placeholder="For example KPT/COE/EEE/24/0000" /></label>
+        <label className="pf-field"><span>Year of graduation</span><input id="cover-year" className="pf-input" inputMode="numeric" value={value.graduationYear} onChange={(event) => change("graduationYear", event.target.value)} maxLength={4} /></label>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <button className="pf-btn pf-btn-primary" type="submit" disabled={state === "saving"}>{state === "saving" ? "Saving…" : "Save"}</button>
+          {state === "saved" && <span role="status" className="pf-muted">Saved. It will appear on your cover and title page.</span>}
+          {state === "error" && <span role="alert" style={{ color: "var(--pf-danger)" }}>{yearOk ? "We couldn't save that. Try again." : "Enter the year as four digits, for example 2026."}</span>}
+          <Link href={`/projects/${project.id}/details`} className="pf-muted" style={{ marginLeft: "auto" }}>Supervisor, school and other details</Link>
+        </div>
+      </form>
+      <div className="pf-paper" style={{ textAlign: "center", fontFamily: "var(--pf-serif)", fontWeight: 700, lineHeight: 1.9, fontSize: type === "COVER_PAGE" ? 16 : 14 }}>
+        <p style={{ margin: "0 0 28px" }}>{project.title.toUpperCase()}</p>
+        <p style={{ margin: 0 }}>RESEARCH PROJECT BY</p>
+        <p style={{ margin: "0 0 28px" }}>{name.toUpperCase()}<br />{number.toUpperCase()}</p>
+        <p style={{ margin: "0 0 28px" }}>{[project.department && `DEPARTMENT OF ${project.department.replace(/^department of /i, "").toUpperCase()}`, project.school, project.college, project.institution].filter(Boolean).map((line) => String(line).toUpperCase()).map((line, index) => <span key={index}>{index > 0 && <br />}{line}</span>)}</p>
+        <p style={{ margin: 0 }}>IN PARTIAL FULFILMENT OF THE REQUIREMENTS FOR THE AWARD OF {project.programme === "ND" ? "NATIONAL DIPLOMA" : "HIGHER NATIONAL DIPLOMA"}</p>
+        <p style={{ margin: "28px 0 0" }}>{yearOk ? year : ""}</p>
+      </div>
+    </>
+  );
+}
+
 export function DocumentPage() {
   const { documentId } = useParams<{ documentId: string }>();
   const { project, documents, template, patchDocument } = useWorkspace();
@@ -150,20 +204,10 @@ export function DocumentPage() {
         <div>
           <nav className="pf-crumbs" aria-label="Breadcrumb">{crumbs.map((crumb, index) => <span key={crumb.label}>{index > 0 && " / "}{crumb.label}</span>)}</nav>
           <h1 className="pf-title-input" style={{ margin: "0 0 14px" }}>{doc.title}</h1>
-          <div className="pf-callout"><Info size={18} aria-hidden style={{ flex: "none", marginTop: 2 }} /><span>This page is built for you from your project details when you export. There is nothing to type here.</span></div>
+          <div className="pf-callout"><Info size={18} aria-hidden style={{ flex: "none", marginTop: 2 }} /><span>{showCover ? "This page is built for you. Type your name and registration number below and it fills in." : "This page is built for you when you export. There is nothing to type here."}</span></div>
           {doc.type === "LIST_OF_FIGURES" && <GeneratedList kind="figures" />}
           {doc.type === "LIST_OF_TABLES" && <GeneratedList kind="tables" />}
-          {showCover && (
-            <div className="pf-paper" style={{ textAlign: "center", fontFamily: "var(--pf-serif)", fontWeight: 700, lineHeight: 1.9, fontSize: doc.type === "COVER_PAGE" ? 16 : 14 }}>
-              <p style={{ margin: "0 0 28px" }}>{project.title.toUpperCase()}</p>
-              <p style={{ margin: 0 }}>RESEARCH PROJECT BY</p>
-              <p style={{ margin: "0 0 28px" }}>{(project.studentName || (user ? `${user.firstName} ${user.lastName}` : "YOUR NAME")).toUpperCase()}<br />{(project.registrationNumber || "YOUR REGISTRATION NUMBER").toUpperCase()}</p>
-              <p style={{ margin: "0 0 28px" }}>{[project.department && `DEPARTMENT OF ${project.department.replace(/^department of /i, "").toUpperCase()}`, project.school, project.college, project.institution].filter(Boolean).map((line) => String(line).toUpperCase()).map((line, index) => <span key={index}>{index > 0 && <br />}{line}</span>)}</p>
-              <p style={{ margin: 0 }}>IN PARTIAL FULFILMENT OF THE REQUIREMENTS FOR THE AWARD OF {project.programme === "ND" ? "NATIONAL DIPLOMA" : "HIGHER NATIONAL DIPLOMA"}</p>
-              <p style={{ margin: "28px 0 0" }}>{project.graduationYear ?? new Date().getFullYear()}</p>
-              {(!project.studentName || !project.registrationNumber) && <p style={{ margin: "24px 0 0", fontFamily: "var(--pf-sans)", fontWeight: 500, fontSize: 13 }}><Link href={`/projects/${project.id}/details`}>Add your name and registration number</Link></p>}
-            </div>
-          )}
+          {showCover && <CoverCard type={doc.type} />}
         </div>
         <GuidancePanel guidance={{ ...guidance, prompts: [] }} />
       </div>

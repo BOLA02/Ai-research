@@ -6,6 +6,7 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Download, FileText } from "lu
 import { API_BASE_URL, api } from "@/lib/api";
 import { useWorkspace } from "@/lib/workspace/provider";
 import type { Check } from "@/lib/workspace/types";
+import { ToolGuide } from "./tool-guide";
 
 export function ExportPage() {
   const { project, template, flushSaves } = useWorkspace();
@@ -60,7 +61,8 @@ export function ExportPage() {
     <div className="pf-section" style={{ maxWidth: 760 }}>
       <div className="pf-eyebrow">Tools</div>
       <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>Export</h1>
-      <p className="pf-lede" style={{ marginBottom: 20 }}>Download your report as a Word document, already set up the way your department asks. You can keep editing it in Word.</p>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}><ToolGuide id="export" label="Export" steps={[{ target: "intro", placement: "bottom", title: "Your Word document", body: <p>The download is already set up the way your department asks: page size, margins, font, spacing, page numbers and the table of contents.</p> }, { target: "add", placement: "bottom", title: "Download it", body: <p>Press Download. Open it in Word and, if asked, choose to update the fields so the table of contents shows the right page numbers.</p> }]} /></div>
+      <p data-tour="intro" className="pf-lede" style={{ marginBottom: 20 }}>Download your report as a Word document, already set up the way your department asks. You can keep editing it in Word.</p>
 
       <section className="pf-card" style={{ padding: 20, display: "grid", gap: 14 }}>
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
@@ -69,7 +71,7 @@ export function ExportPage() {
             <strong style={{ display: "block" }}>{project.title}</strong>
             <span className="pf-muted" style={{ fontSize: 14 }}>Word document (.docx), {project.referenceStyle ?? "IEEE"} referencing</span>
           </div>
-          <button className="pf-btn pf-btn-primary" onClick={download} disabled={busy}><Download size={16} aria-hidden /> {busy ? "Preparing…" : "Download Word document"}</button>
+          <button data-tour="add" className="pf-btn pf-btn-primary" onClick={download} disabled={busy}><Download size={16} aria-hidden /> {busy ? "Preparing…" : "Download Word document"}</button>
         </div>
         {error && <div className="pf-alert" role="alert">{error}</div>}
 

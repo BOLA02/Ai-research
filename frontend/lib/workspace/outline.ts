@@ -23,7 +23,7 @@ export function flattenTree(nodes: SectionNode[]): SectionNode[] {
   return nodes.flatMap((node) => [node, ...flattenTree(node.children)]);
 }
 
-export const wordCount = (text: string) => (text.trim() ? text.trim().split(/\s+/).length : 0);
+export const wordCount = (text: string) => { const t = text.replace(/^\{(?:left|right|center|justify)\}[ \t]?/gm, "").trim(); return t ? t.split(/\s+/).length : 0; };
 
 /**
  * Whether the student has really started a part. Declaration and approval pages arrive

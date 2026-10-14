@@ -34,6 +34,45 @@ export function toParagraphs(text: string): string[][] {
     .filter((lines) => lines.some((line) => line.trim()));
 }
 
+export type Align = "left" | "right" | "center" | "justify";
+export type Unit =
+  | { kind: "para"; lines: string[]; align?: Align }
+  | { kind: "item"; marker: string; text: string; align?: Align };
+
+const TOKEN = /^\{(left|right|center|justify)\}[ \t]?/;
+const ITEM = /^(?:(-|•)|(\d{1,2}[.)]|\([a-z]\)|[a-z]\)|\((?:i|ii|iii|iv|v|vi|vii|viii|ix|x)\)))[ \t]+(\S.*)$/;
+
+/**
+ * Reads the writer's text as paragraphs and list items. A line may start with an
+ * alignment mark such as {right}; for a paragraph it is the first line that counts.
+ * Lines starting with "- ", "1. ", "a) " or "(i) " are list items of their own.
+ */
+export function parseUnits(text: string): Unit[] {
+  const units: Unit[] = [];
+  let open: Extract<Unit, { kind: "para" }> | null = null;
+  for (const raw of text.replace(/\r\n/g, "\n").split("\n")) {
+    const line = raw.trimEnd();
+    if (!line.trim()) {
+      open = null;
+      continue;
+    }
+    const tagged = TOKEN.exec(line);
+    const align = tagged ? (tagged[1] as Align) : undefined;
+    const rest = tagged ? line.slice(tagged[0].length) : line;
+    const item = ITEM.exec(rest);
+    if (item) {
+      units.push({ kind: "item", marker: item[1] ? "•" : item[2], text: item[3], align });
+      open = null;
+    } else if (open) {
+      open.lines.push(rest);
+    } else {
+      open = { kind: "para", lines: [rest], align };
+      units.push(open);
+    }
+  }
+  return units;
+}
+
 /** Splits "plain *italic* plain" into pieces. */
 export function italicPieces(text: string): { text: string; italics: boolean }[] {
   return text

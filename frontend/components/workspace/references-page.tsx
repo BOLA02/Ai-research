@@ -8,6 +8,7 @@ import { normaliseStyle } from "@/lib/workspace/style";
 import type { ApiSource, ReferenceStyle } from "@/lib/workspace/types";
 import { Formatted } from "./formatted";
 import { SOURCE_TYPES, SourceForm } from "./source-form";
+import { ToolGuide } from "./tool-guide";
 
 const STYLE_HELP: Record<ReferenceStyle, string> = {
   IEEE: "Numbered style. Citations look like [1] and the list is in the order you cite. Your department uses it for electrical, electronic and computing projects.",
@@ -51,12 +52,13 @@ export function ReferencesPage() {
   return (
     <div className="pf-section" style={{ maxWidth: 900 }}>
       <div className="pf-eyebrow">Tools</div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}><ToolGuide id="references" label="References" steps={[{ target: "style", placement: "bottom", title: "Pick your style", body: <p>IEEE numbers your sources in the order you cite them. APA lists them by author. You can switch at any time and everything reformats.</p> }, { target: "add", placement: "bottom", title: "Add each source", body: <p>Add every book, paper or website you read. Fill in as much as you know and the tool formats it for you.</p> }]} /></div>
       <div className="pf-page-head" style={{ marginBottom: 16 }}>
         <h1 style={{ margin: 0, fontSize: 28 }}>References</h1>
-        {mode === "list" && <button className="pf-btn pf-btn-primary" onClick={() => setMode("new")}><Plus size={16} aria-hidden /> Add source</button>}
+        {mode === "list" && <button data-tour="add" className="pf-btn pf-btn-primary" onClick={() => setMode("new")}><Plus size={16} aria-hidden /> Add source</button>}
       </div>
 
-      <div className="pf-card" style={{ padding: 16, marginBottom: 20 }}>
+      <div data-tour="style" className="pf-card" style={{ padding: 16, marginBottom: 20 }}>
         <div className="pf-label" id="style-label">Reference style</div>
         <div role="radiogroup" aria-labelledby="style-label" className="pf-seg">
           {(["IEEE", "APA"] as const).map((option) => (
@@ -74,7 +76,7 @@ export function ReferencesPage() {
           <BookMarked size={28} aria-hidden color="var(--pf-brand)" />
           <h3>No sources yet</h3>
           <p className="pf-muted" style={{ maxWidth: 440 }}>Add each book, paper or website you read. Then, while writing, press <strong>Insert › Citation</strong> to cite it. The list below builds itself.</p>
-          <button className="pf-btn pf-btn-primary" onClick={() => setMode("new")}>Add your first source</button>
+          <button data-tour="add" className="pf-btn pf-btn-primary" onClick={() => setMode("new")}>Add your first source</button>
         </div>
       )}
 

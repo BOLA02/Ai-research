@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AlertCircle, Bold, BookMarked, Calculator, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Italic, Loader2, Plus, Redo2, Table2, Underline, Undo2 } from "lucide-react";
+import { AlertCircle, AlignCenter, AlignJustify, AlignLeft, AlignRight, Bold, BookMarked, Calculator, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Italic, List, ListOrdered, Loader2, Plus, Redo2, Table2, Underline, Undo2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useReportIndex } from "@/lib/workspace/hooks";
 import { useWorkspace, type ContentTarget } from "@/lib/workspace/provider";
 import { wordCount, type WritingItem } from "@/lib/workspace/outline";
+import { alignmentAt, setAlignment, toggleList, type Align } from "@/lib/workspace/blocks";
 import type { Guidance } from "@/lib/workspace/types";
 import { CoachPanel } from "./coach-panel";
-import { Formatted } from "./formatted";
+import { RichText } from "./formatted";
 import { GuidancePanel } from "./guidance";
 
 type Props = {
@@ -108,6 +109,21 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
       commit(`${content.slice(0, start)}${mark}${mark}${content.slice(end)}`, { newStep: true });
     }
   };
+
+  /** Where the cursor is, so the toolbar can show which alignment applies there. */
+  const [here, setHere] = useState<Align | undefined>(undefined);
+  const looked = () => setHere(alignmentAt(content, area.current?.selectionStart ?? 0));
+  useEffect(looked, [content]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const edit = (change: (text: string, from: number, to: number) => { text: string; from: number; to: number }) => {
+    const element = area.current;
+    if (!element) return;
+    const result = change(content, element.selectionStart, element.selectionEnd);
+    range.current = [result.from, result.to];
+    commit(result.text, { newStep: true });
+  };
+  const align = (value: Align) => edit((text, from, to) => setAlignment(text, from, to, value));
+  const list = (kind: "bullet" | "number") => edit((text, from, to) => toggleList(text, from, to, kind));
 
   const onKey = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (!(event.ctrlKey || event.metaKey)) return;
@@ -209,13 +225,19 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
 
         <div className="pf-toolbar">
           <div role="tablist" aria-label="View" className="pf-seg">
-            <button role="tab" aria-selected={mode === "write"} className={mode === "write" ? "on" : ""} onClick={() => setMode("write")}>Write</button>
-            <button role="tab" aria-selected={mode === "preview"} className={mode === "preview" ? "on" : ""} onClick={showPreview}>Preview</button>
+            <button data-tip="Type and edit your text" role="tab" aria-selected={mode === "write"} className={mode === "write" ? "on" : ""} onClick={() => setMode("write")}>Write</button>
+            <button data-tip="See your citations, figure numbers and formatting as they will read" role="tab" aria-selected={mode === "preview"} className={mode === "preview" ? "on" : ""} onClick={showPreview}>Preview</button>
           </div>
           {mode === "write" && (
             <div className="pf-tools" role="toolbar" aria-label="Formatting">
               <button type="button" className="pf-icon-btn" onClick={undo} disabled={steps.undo === 0} aria-label="Undo" title="Undo (Ctrl+Z)"><Undo2 size={17} aria-hidden /></button>
               <button type="button" className="pf-icon-btn" onClick={redo} disabled={steps.redo === 0} aria-label="Redo" title="Redo (Ctrl+Y)"><Redo2 size={17} aria-hidden /></button>
+              <span className="pf-tools-sep" aria-hidden />
+              {([["left", AlignLeft, "Align left"], ["center", AlignCenter, "Centre"], ["right", AlignRight, "Align right"], ["justify", AlignJustify, "Justify (both edges)"]] as const).map(([value, Icon, label]) => (
+                <button key={value} type="button" className={`pf-icon-btn ${here === value ? "on" : ""}`} aria-pressed={here === value} onMouseDown={(event) => event.preventDefault()} onClick={() => align(value)} aria-label={label} data-tip={`${label}: the paragraph or list item you're in`}><Icon size={17} aria-hidden /></button>
+              ))}
+              <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => list("bullet")} aria-label="Bulleted list" data-tip="Bulleted list (selected lines)"><List size={17} aria-hidden /></button>
+              <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => list("number")} aria-label="Numbered list" data-tip="Numbered list (selected lines)"><ListOrdered size={17} aria-hidden /></button>
               <span className="pf-tools-sep" aria-hidden />
               <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => emphasise("**")} aria-label="Bold" title="Bold (Ctrl+B)"><Bold size={17} aria-hidden /></button>
               <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => emphasise("*")} aria-label="Italic" title="Italic (Ctrl+I)"><Italic size={17} aria-hidden /></button>
@@ -224,7 +246,7 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
           )}
           {mode === "write" && (
             <div ref={toolbar} style={{ position: "relative" }}>
-              <button className="pf-btn pf-btn-sm" aria-haspopup="menu" aria-expanded={menu} onClick={() => { caret.current = null; setMenu(!menu); }}><Plus size={14} aria-hidden /> Insert</button>
+              <button data-tip="Add a citation, figure, table or calculation to your text" className="pf-btn pf-btn-sm" aria-haspopup="menu" aria-expanded={menu} onClick={() => { caret.current = null; setMenu(!menu); }}><Plus size={14} aria-hidden /> Insert</button>
               {menu && (
                 <div className="pf-menu" role="menu" style={{ right: 0, top: 38 }} onKeyDown={(event) => event.key === "Escape" && setMenu(false)}>
                   <div className="hd"><BookMarked size={11} aria-hidden /> Citation</div>
@@ -257,12 +279,13 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
                 placeholder={placeholder}
                 onChange={(event) => commit(event.target.value)}
                 onKeyDown={onKey}
+                onSelect={looked}
                 spellCheck
               />
             </>
           ) : (
             <div className="pf-preview" aria-live="polite">
-              {previewing ? <span className="pf-muted">Formatting your citations…</span> : preview ? <Formatted text={preview} /> : <span className="pf-muted">Nothing written yet.</span>}
+              {previewing ? <span className="pf-muted">Formatting your citations…</span> : preview ? <RichText text={preview} /> : <span className="pf-muted">Nothing written yet.</span>}
             </div>
           )}
         </div>

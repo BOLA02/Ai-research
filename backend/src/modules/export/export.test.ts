@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import { FORMAT } from "../../templates/eee-hnd";
 import { buildDocx } from "./docx-builder";
 import type { ExportModel } from "./export.model";
-import { awardFor, chapterWord, departmentLine, fillBlanks, fit, imageSize, italicPieces, styledPieces, toParagraphs, toRoman } from "./export.util";
+import { awardFor, chapterWord, departmentLine, fillBlanks, fit, imageSize, italicPieces, parseUnits, styledPieces, toParagraphs, toRoman } from "./export.util";
 
 const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
 
@@ -30,7 +30,8 @@ async function parts() {
   const document = await zip.file("word/document.xml")!.async("string");
   const settings = await zip.file("word/settings.xml")!.async("string");
   const headers = await Promise.all(Object.keys(zip.files).filter((name) => name.startsWith("word/header")).map((name) => zip.file(name)!.async("string")));
-  return { zip, document, settings, headers };
+  const footers = await Promise.all(Object.keys(zip.files).filter((name) => name.startsWith("word/footer")).map((name) => zip.file(name)!.async("string")));
+  return { zip, document, settings, headers, footers };
 }
 
 test("the document follows the department's page format", async () => {
@@ -123,4 +124,46 @@ test("styledPieces reads bold, italic and underline marks", () => {
   assert.deepEqual(styledPieces("***both***"), [{ text: "both", bold: true, italics: true, underline: false }]);
   // Unclosed marks and marks across lines stay as typed.
   assert.deepEqual(styledPieces("only **open here"), [{ text: "only **open here", ...plain }]);
+});
+
+test("page numbers: roman front matter, and first pages of chapters at the bottom centre", async () => {
+  const { document, footers, headers } = await parts();
+  assert.ok(footers.some((xml) => xml.includes('w:val="center"') && xml.includes("PAGE")), "a centred page number footer exists");
+  assert.ok(headers.some((xml) => xml.includes('w:val="right"') && xml.includes("PAGE")), "other pages keep the top-right number");
+  // cover, front matter, chapter 1, references and the appendix are each their own section
+  assert.equal((document.match(/<w:sectPr/g) ?? []).length, 5);
+  assert.equal((document.match(/<w:titlePg/g) ?? []).length, 4, "every section but the cover has its own first page");
+  assert.equal((document.match(/<w:pgNumType[^>]*w:fmt="lowerRoman"/g) ?? []).length, 1);
+  assert.equal((document.match(/<w:pgNumType[^>]*w:fmt="decimal"/g) ?? []).length, 3);
+  assert.equal((document.match(/<w:pgNumType[^>]*w:start="1"/g) ?? []).length, 2, "numbers restart once for the body, not per chapter");
+});
+
+test("parseUnits reads alignment marks and list items", () => {
+  assert.deepEqual(parseUnits("{right}Signed\nMusa\n\nPlain"), [
+    { kind: "para", lines: ["Signed", "Musa"], align: "right" },
+    { kind: "para", lines: ["Plain"], align: undefined },
+  ]);
+  assert.deepEqual(parseUnits("Steps:\n1. Wire it\n2) Test it\n- spare\n{center}(a) odd"), [
+    { kind: "para", lines: ["Steps:"], align: undefined },
+    { kind: "item", marker: "1.", text: "Wire it", align: undefined },
+    { kind: "item", marker: "2)", text: "Test it", align: undefined },
+    { kind: "item", marker: "•", text: "spare", align: undefined },
+    { kind: "item", marker: "(a)", text: "odd", align: "center" },
+  ]);
+  // A year or a hyphenated word is not a list.
+  assert.equal(parseUnits("2019. Then it rained.\nwell-known")[0].kind, "para");
+});
+
+test("a paragraph or list item can be aligned on its own in the Word file", async () => {
+  const withMarks: ExportModel = { ...model, chapters: [{ ...model.chapters[0], sections: [{ ...model.chapters[0].sections[0], body: [{ t: "text", text: "Justified one.\n\n{left}Left one.\n\n{right}Right one.\n\n{center}Centre one.\n\n1. First step\n{right}2. Second step" }] }] }] };
+  const zip = await JSZip.loadAsync(await buildDocx(withMarks));
+  const xml = await zip.file("word/document.xml")!.async("string");
+  const paragraph = (text: string) => (xml.match(/<w:p>.*?<\/w:p>/gs) ?? []).find((p) => p.includes(text))!;
+  assert.match(paragraph("Justified one."), /w:jc w:val="both"/);
+  assert.match(paragraph("Left one."), /w:jc w:val="left"/);
+  assert.match(paragraph("Right one."), /w:jc w:val="right"/);
+  assert.match(paragraph("Centre one."), /w:jc w:val="center"/);
+  assert.match(paragraph("First step"), /w:hanging="567"/, "list items hang their marker");
+  assert.match(paragraph("Second step"), /w:jc w:val="right"/);
+  assert.doesNotMatch(xml, /\{right\}|\{left\}/, "the marks never reach the document");
 });

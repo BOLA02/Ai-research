@@ -4,9 +4,11 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Copy, ImagePlus, Plus, Trash2 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import { prepareImage } from "@/lib/workspace/image";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { useReportIndex, useSectionOptions } from "@/lib/workspace/hooks";
 import type { ApiFigure } from "@/lib/workspace/types";
+import { ToolGuide } from "./tool-guide";
 
 const MAX_BYTES = 3 * 1024 * 1024;
 
@@ -19,17 +21,20 @@ function FigureCard({ figure, number }: { figure: ApiFigure; number?: number }) 
   const [copied, setCopied] = useState(false);
   const [version, setVersion] = useState(0);
   const file = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
 
   const upload = async (chosen?: File) => {
     if (!chosen) return;
     setError("");
-    if (!["image/png", "image/jpeg"].includes(chosen.type)) return setError("Use a PNG or JPEG image.");
-    if (chosen.size > MAX_BYTES) return setError("Images can be up to 3 MB.");
+    if (!chosen.type.startsWith("image/")) return setError("Choose a picture (PNG or JPEG work best).");
+    setBusy(true);
     try {
-      await uploadFigureImage(figure.id, chosen);
+      await uploadFigureImage(figure.id, await prepareImage(chosen, MAX_BYTES));
       setVersion((current) => current + 1);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Couldn't upload the image.");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -61,10 +66,10 @@ function FigureCard({ figure, number }: { figure: ApiFigure; number?: number }) 
       ) : (
         <button type="button" className="pf-drop" onClick={() => file.current?.click()} style={{ cursor: "pointer", background: "transparent" }}>
           <ImagePlus size={22} aria-hidden />
-          <span>Add the image<br /><small>PNG or JPEG, up to 3 MB</small></span>
+          <span>Add the image<br /><small>{busy ? "Preparing and uploading…" : "A photo or a PNG or JPEG file. Large ones are shrunk for you."}</small></span>
         </button>
       )}
-      <input ref={file} type="file" accept="image/png,image/jpeg" hidden onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />
+      <input ref={file} type="file" accept="image/*" hidden onChange={(event) => { void upload(event.target.files?.[0]); event.target.value = ""; }} />
       {error && <div className="pf-alert" role="alert">{error}</div>}
 
       <div>
@@ -122,9 +127,10 @@ export function FiguresPage() {
     <div className="pf-section" style={{ maxWidth: 900 }}>
       <div className="pf-eyebrow">Tools</div>
       <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>Figures</h1>
-      <p className="pf-lede" style={{ marginBottom: 20 }}>Figures are numbered 1, 2, 3 in the order they appear in your report, and the numbers update by themselves if you move things around. Mention a figure in your text with its marker, for example <code>[fig:block-diagram]</code>.</p>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}><ToolGuide id="figures" label="Figures" steps={[{ target: "intro", placement: "bottom", title: "Figures", body: <p>Circuit diagrams, photos and charts go here. They are numbered for you in the order they appear in your report.</p> }, { target: "add", placement: "bottom", title: "Start with a caption", body: <p>Type what the figure shows, pick the section it belongs in, then press Add. You upload the picture next.</p> }, { target: "items", placement: "bottom", title: "Upload the picture", body: <p>Then add the image. A photo from your phone is fine, large ones are shrunk for you. Copy the marker and paste it into your text where the figure is mentioned.</p> }]} /></div>
+      <p data-tour="intro" className="pf-lede" style={{ marginBottom: 20 }}>Figures are numbered 1, 2, 3 in the order they appear in your report, and the numbers update by themselves if you move things around. Mention a figure in your text with its marker, for example <code>[fig:block-diagram]</code>.</p>
 
-      <form onSubmit={add} className="pf-card" style={{ padding: 16, marginBottom: 20 }}>
+      <form data-tour="add" onSubmit={add} className="pf-card" style={{ padding: 16, marginBottom: 20 }}>
         <div className="pf-label">Add a figure</div>
         <div className="pf-inline-form" style={{ marginTop: 0, flexWrap: "wrap" }}>
           <input className="pf-input" style={{ flex: "1 1 240px" }} aria-label="Figure caption" placeholder="Caption, e.g. Block diagram of the system" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={1000} />
@@ -139,7 +145,7 @@ export function FiguresPage() {
       {figures.length === 0 ? (
         <div className="pf-empty"><h3>No figures yet</h3><p className="pf-muted">Circuit diagrams, photos and charts go here.</p></div>
       ) : (
-        <ul className="pf-list" style={{ gap: 16 }}>{numbered.map((figure) => <FigureCard key={figure.id} figure={figure} number={index?.figures.find((item) => item.id === figure.id)?.number} />)}</ul>
+        <ul data-tour="items" className="pf-list" style={{ gap: 16 }}>{numbered.map((figure) => <FigureCard key={figure.id} figure={figure} number={index?.figures.find((item) => item.id === figure.id)?.number} />)}</ul>
       )}
     </div>
   );
