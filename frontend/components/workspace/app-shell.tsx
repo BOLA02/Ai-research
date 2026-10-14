@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="pf-topbar">
         <Link href="/dashboard" className="pf-brand">
           <span className="pf-brand-mark"><PenLine size={16} aria-hidden /></span>
-          ProjectForge
+          <span className="pf-brand-name">ProjectForge</span>
         </Link>
         <nav className="pf-nav" aria-label="Main">
           {links.map((link) => (

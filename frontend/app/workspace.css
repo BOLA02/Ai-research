@@ -304,3 +304,38 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .pf-guide-more { margin-top: 4px; }
 .pf-guide-more summary { cursor: pointer; font-size: 13px; color: var(--pf-ink-soft); }
 @media (prefers-reduced-motion: reduce) { .pf-tour-ring { transition: none; } }
+
+/* ------------------------------------------------------------ Phones first */
+@media (max-width: 860px) {
+  .pf-brand-name, .pf-avatar { display: none; }
+  .pf-topbar .pf-nav a { padding: 12px; }
+  /* Comfortable touch targets (44px) and no iOS zoom on focus. */
+  .pf-btn, .pf-btn-sm, .pf-icon-btn, .pf-seg button, .pf-link, .pf-tour-skip { min-height: 44px; }
+  .pf-icon-btn { min-width: 44px; }
+  .pf-btn-sm { padding-top: 10px; padding-bottom: 10px; }
+  .pf-link { padding-top: 11px; padding-bottom: 11px; }
+  input, select, textarea { font-size: 16px; }
+  .pf-pager { gap: 10px; }
+  .pf-pager .pf-btn { flex: 1; justify-content: center; text-align: center; }
+  .pf-tour-card { padding: 16px; }
+  .pf-tour-nav .pf-btn { min-width: 76px; justify-content: center; }
+}
+@media (max-width: 860px) { .pf-back, .pf-rail-title { display: inline-flex; align-items: center; min-height: 44px; } }
+@media (max-width: 1100px) {
+  /* On a phone the guide comes first, then the writing, then the coach. */
+  .pf-guide { display: contents; }
+  .pf-guide-mini { order: -1; }
+  .pf-guide > [data-tour="coach"] { margin-top: 4px; }
+}
+@media (max-width: 860px) {
+  /* Justified text leaves wide gaps on a narrow screen. The Word export stays justified. */
+  .pf-textarea, .pf-preview { text-align: left; hyphens: auto; }
+}
+@media (max-width: 860px) { .pf-editor-wrap { gap: 16px; } }
+@media (max-width: 860px) {
+  /* Keep the guide card slim on a phone; the full text is in the step-by-step guide. */
+  .pf-guide-mini { grid-template-columns: 1fr auto; align-items: center; padding: 12px 14px; }
+  .pf-guide-mini h2 { margin: 0; }
+  .pf-guide-mini:has(button) p { display: none; }
+  .pf-guide-mini button { grid-column: 2; grid-row: 1; }
+}
