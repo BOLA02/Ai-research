@@ -43,7 +43,7 @@ The coach reviews a section (or the abstract) and gives feedback: what works, wh
 - `POST /api/projects/:projectId/ai/review` with `{ kind: "section" | "document", id }`. Only chapter sections and the abstract can be reviewed. The text is read from the database, so unsaved edits are not sent.
 - **What the model sees:** the department template's guidance for that part, the examiner questions and report criteria from the guidelines (`src/templates/examiner.ts`), writing advice from the guidelines' content summary, the project's Chapter 1 objectives for discussion and conclusion sections, and the student's text with citation markers already resolved. Student text is placed inside `<student_text>` and the system prompt tells the model to treat it as data.
 - **Guardrails:** at least 30 and at most 8000 words; a daily allowance per student (`AI_DAILY_LIMIT`, default 20, counted in UTC) and a per-minute limit (`AI_BURST_PER_MINUTE`, default 6); a failed or declined review gives its allowance back; quotes the model attributes to the student are checked against the text and dropped if they are not there.
-- **Model:** `AI_MODEL`, default `claude-opus-5-5`, with `effort: "medium"`, structured JSON output, and `fallbacks: "default"` so a request declined by a safety classifier is retried on the model Anthropic recommends.
+- **Model:** `AI_MODEL`, default `claude-sonnet-5-5`, with `effort: "medium"`, structured JSON output, and `fallbacks: "default"` so a request declined by a safety classifier is retried on the model Anthropic recommends.
 - **Privacy:** the student's text is sent to Anthropic to generate the feedback and is not stored by ProjectForge. The interface says so.
 
 ## Calculations

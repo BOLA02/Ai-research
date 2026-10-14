@@ -11,7 +11,7 @@ const schema = z.object({
   SESSION_COOKIE_NAME: z.string().min(1).default("pf_session"),
   // The writing coach is switched on by setting an API key. The SDK reads ANTHROPIC_BASE_URL itself.
   ANTHROPIC_API_KEY: z.string().optional(),
-  AI_MODEL: z.string().min(1).default("claude-opus-5-5"),
+  AI_MODEL: z.string().min(1).default("claude-sonnet-5-5"),
   AI_DAILY_LIMIT: z.coerce.number().int().min(1).max(500).default(20),
   AI_BURST_PER_MINUTE: z.coerce.number().int().min(1).max(60).default(6),
 });
