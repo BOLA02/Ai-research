@@ -179,6 +179,7 @@ export type ReportIndex = {
   sources: SourceEntry[];
   figures: NumberedItem[];
   tables: NumberedItem[];
+  calculations?: { id: string; label: string; title: string; lines: string[] }[];
 };
 
 export type Severity = "error" | "warning" | "info" | "ok";
@@ -197,3 +198,28 @@ export type CoachReview = {
 };
 
 export type CoachStatus = { enabled: boolean; dailyLimit: number; remaining: number };
+
+/* ---- Calculations ---- */
+
+export type CalcVariable = { symbol: string; name?: string; value: string; unit?: string };
+export type CalcStep = { symbol: string; name?: string; expression: string; unit?: string; decimals?: number | null };
+
+export type CalcResult = {
+  variables: { symbol: string; error: string | null }[];
+  steps: { symbol: string; value: number | null; line: string; error: string | null }[];
+  lines: string[];
+  ok: boolean;
+};
+
+export type ApiCalculation = {
+  id: string;
+  label: string;
+  title: string;
+  sectionId: string | null;
+  note: string | null;
+  variables: CalcVariable[];
+  steps: CalcStep[];
+  result: CalcResult;
+};
+
+export type CalcDraft = { variables: CalcVariable[]; steps: CalcStep[]; note: string | null };

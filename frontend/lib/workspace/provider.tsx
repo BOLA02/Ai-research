@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import type { ApiChapter, ApiDocument, ApiFigure, ApiProject, ApiSection, ApiSource, ApiTable, ReferenceStyle, SourceInput, Template } from "./types";
+import type { ApiCalculation, ApiChapter, ApiDocument, ApiFigure, ApiProject, ApiSection, ApiSource, ApiTable, CalcDraft, CalcResult, ReferenceStyle, SourceInput, Template } from "./types";
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 export type ContentTarget = { kind: "document"; id: string } | { kind: "section"; id: string; chapterId: string };
@@ -17,6 +17,7 @@ type Workspace = {
   sources: ApiSource[];
   figures: ApiFigure[];
   tables: ApiTable[];
+  calculations: ApiCalculation[];
   saveState: SaveState;
   /** Waits until everything typed so far has reached the server. */
   flushSaves: () => Promise<void>;
@@ -33,6 +34,11 @@ type Workspace = {
   createTable: (input: { caption: string; sectionId?: string | null; columns?: string[]; rows?: string[][] }) => Promise<ApiTable>;
   updateTable: (id: string, input: Partial<Pick<ApiTable, "caption" | "sectionId" | "sourceNote" | "columns" | "rows">>) => Promise<void>;
   deleteTable: (id: string) => Promise<void>;
+  createCalculation: (input: { title: string; sectionId?: string | null; note?: string | null; variables?: ApiCalculation["variables"]; steps?: ApiCalculation["steps"] }) => Promise<ApiCalculation>;
+  updateCalculation: (id: string, input: Partial<Pick<ApiCalculation, "title" | "sectionId" | "note" | "variables" | "steps">>) => Promise<void>;
+  deleteCalculation: (id: string) => Promise<void>;
+  /** Works out a draft without saving it. */
+  previewCalculation: (draft: CalcDraft) => Promise<CalcResult>;
   setContent: (target: ContentTarget, content: string) => void;
   patchDocument: (id: string, input: { title?: string; isEnabled?: boolean }) => Promise<void>;
   createChapter: (title: string) => Promise<string>;
@@ -58,6 +64,7 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
   const [sources, setSources] = useState<ApiSource[]>([]);
   const [figures, setFigures] = useState<ApiFigure[]>([]);
   const [tables, setTables] = useState<ApiTable[]>([]);
+  const [calculations, setCalculations] = useState<ApiCalculation[]>([]);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   // Pending debounced saves, keyed by target id. The latest content wins.
@@ -67,13 +74,14 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
 
   const reload = useCallback(async () => {
     try {
-      const [{ project }, docs, chs, src, figs, tabs] = await Promise.all([
+      const [{ project }, docs, chs, src, figs, tabs, calcs] = await Promise.all([
         api<{ project: ApiProject }>(`/projects/${projectId}`),
         api<{ documents: ApiDocument[] }>(`/projects/${projectId}/documents`),
         api<{ chapters: ApiChapter[] }>(`/projects/${projectId}/chapters`),
         api<{ sources: ApiSource[] }>(`/projects/${projectId}/sources`),
         api<{ figures: ApiFigure[] }>(`/projects/${projectId}/figures`),
         api<{ tables: ApiTable[] }>(`/projects/${projectId}/tables`),
+        api<{ calculations: ApiCalculation[] }>(`/projects/${projectId}/calculations`),
       ]);
       // Projects created before templates existed have no templateId; use the default guidance.
       const loaded = await api<{ template: Template }>(`/templates/${project.templateId ?? DEFAULT_TEMPLATE_ID}`).catch(() => null);
@@ -84,6 +92,7 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
       setSources(src.sources);
       setFigures(figs.figures);
       setTables(tabs.tables);
+      setCalculations(calcs.calculations);
       setError(null);
       setStatus("ready");
     } catch (reason) {
@@ -182,6 +191,7 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
       sources,
       figures,
       tables,
+      calculations,
       flushSaves,
       setContent,
       reload,
@@ -236,6 +246,23 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
         const data = await api<{ table: ApiTable }>(`/projects/${projectId}/tables/${id}`, { method: "PATCH", body: JSON.stringify(input) });
         setTables((rows) => rows.map((row) => (row.id === id ? data.table : row)));
       },
+      async createCalculation(input) {
+        const data = await api<{ calculation: ApiCalculation }>(`/projects/${projectId}/calculations`, { method: "POST", body: JSON.stringify(input) });
+        setCalculations((rows) => [...rows, data.calculation]);
+        return data.calculation;
+      },
+      async updateCalculation(id, input) {
+        const data = await api<{ calculation: ApiCalculation }>(`/projects/${projectId}/calculations/${id}`, { method: "PATCH", body: JSON.stringify(input) });
+        setCalculations((rows) => rows.map((row) => (row.id === id ? data.calculation : row)));
+      },
+      async deleteCalculation(id) {
+        await api(`/projects/${projectId}/calculations/${id}`, { method: "DELETE" });
+        setCalculations((rows) => rows.filter((row) => row.id !== id));
+      },
+      async previewCalculation(draft) {
+        const data = await api<{ result: CalcResult }>(`/projects/${projectId}/calculations/preview`, { method: "POST", body: JSON.stringify(draft) });
+        return data.result;
+      },
       async deleteTable(id) {
         await api(`/projects/${projectId}/tables/${id}`, { method: "DELETE" });
         setTables((rows) => rows.filter((row) => row.id !== id));
@@ -278,7 +305,7 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
         await reload();
       },
     }),
-    [status, error, project, template, documents, chapters, sources, figures, tables, saveState, flushSaves, setContent, reload, projectId],
+    [status, error, project, template, documents, chapters, sources, figures, tables, calculations, saveState, flushSaves, setContent, reload, projectId],
   );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;

@@ -12,6 +12,7 @@ export function buildIndex(context: ReportContext): ReportIndex {
     sources: buildSourceEntries(style, context.sources, context.blocks),
     figures: numberItems(context.figures, context.sections),
     tables: numberItems(context.tables, context.sections),
+    calculations: context.calculations.map((row) => ({ id: row.id, label: row.label, title: row.title, lines: row.result.lines })),
   };
 }
 
@@ -37,6 +38,7 @@ export async function getChecks(userId: string, projectId: string) {
     sources: context.sources,
     figures: context.figures,
     tables: context.tables,
+    calculations: context.calculations,
     index,
   });
   return { checks, counts: { error: checks.filter((c) => c.severity === "error").length, warning: checks.filter((c) => c.severity === "warning").length, info: checks.filter((c) => c.severity === "info").length, ok: checks.filter((c) => c.severity === "ok").length } };

@@ -265,3 +265,11 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .pf-gap p { margin: 6px 0 0; font-size: 14px; }
 .pf-gap blockquote { margin: 6px 0 0; padding: 6px 10px; border-left: 3px solid var(--pf-accent); background: var(--pf-accent-soft); font: italic 14px var(--pf-serif); color: #4d3410; }
 .pf-gap blockquote svg { vertical-align: -2px; margin-right: 4px; }
+
+/* Calculations */
+.pf-working { padding: 14px 18px; border: 1px solid var(--pf-line); border-radius: 6px; background: #fff; font: 16px/1.9 var(--pf-serif); color: #111; overflow-x: auto; }
+.pf-working div { white-space: nowrap; }
+.pf-working sub { font-size: 0.75em; }
+.pf-calc-error { display: flex; align-items: flex-start; gap: 6px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; background: var(--pf-danger-soft); color: var(--pf-danger); font-size: 13px; line-height: 1.4; }
+.pf-calc-error svg { flex: none; margin-top: 2px; }
+.pf-grid-edit input[aria-invalid="true"] { border-color: var(--pf-danger); background: #fffafa; }

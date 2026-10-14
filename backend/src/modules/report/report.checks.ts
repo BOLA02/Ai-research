@@ -3,12 +3,13 @@ import type { ReportTemplate, SectionTemplate } from "../../templates";
 import type { SectionInfo } from "./report.numbering";
 
 export type Severity = "error" | "warning" | "info" | "ok";
-export type CheckLink = { kind: "section" | "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" | "details" };
+export type CheckLink = { kind: "section" | "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" | "details" | "calculations" };
 export type Check = { id: string; severity: Severity; title: string; detail: string; link?: CheckLink };
 
 type DocumentRow = { id: string; type: string; title: string; content: string; isEnabled: boolean };
 type AssetRow = { id: string; label: string; caption: string; sectionId: string | null; sourceNote: string | null };
 type FigureRow = AssetRow & { isOriginal: boolean; mimeType: string | null };
+type CalculationRow = { id: string; label: string; title: string; sectionId: string | null; result: { ok: boolean; variables: { error: string | null }[]; steps: { symbol: string; error: string | null }[] } };
 
 export type ProjectDetails = {
   studentName: string | null;
@@ -27,6 +28,7 @@ export type CheckInput = {
   sources: IndexedSource[];
   figures: FigureRow[];
   tables: AssetRow[];
+  calculations?: CalculationRow[];
   index: ReportIndex;
 };
 
@@ -66,13 +68,15 @@ function findTemplateSection(sections: SectionTemplate[], key: string): SectionT
 
 export function runChecks(input: CheckInput): Check[] {
   const { style, template, documents, sections, blocks, sources, figures, tables, index } = input;
+  const calculations = input.calculations ?? [];
   const checks: Check[] = [];
   const byKey = new Map(sources.map((source) => [source.citeKey, source]));
   const sectionById = new Map(sections.map((section) => [section.id, section]));
 
   /* Citations that point at nothing, and sources nobody cites. */
   const unknown: { key: string; where: string; block: TextBlock }[] = [];
-  const unknownFig: { label: string; where: string; block: TextBlock; kind: "fig" | "tab" }[] = [];
+  const unknownFig: { label: string; where: string; block: TextBlock; kind: "fig" | "tab" | "calc" }[] = [];
+  const calculationLabels = new Set(calculations.map((calc) => calc.label));
   const figureLabels = new Set(figures.map((figure) => figure.label));
   const tableLabels = new Set(tables.map((table) => table.label));
   const referencedFigures = new Set<string>();
@@ -85,6 +89,7 @@ export function runChecks(input: CheckInput): Check[] {
         if (known.has(marker.label)) (marker.kind === "fig" ? referencedFigures : referencedTables).add(marker.label);
         else unknownFig.push({ label: marker.label, where: block.title, block, kind: marker.kind });
       }
+      if (marker.kind === "calc" && !calculationLabels.has(marker.label)) unknownFig.push({ label: marker.label, where: block.title, block, kind: "calc" });
     }
 
   const linkTo = (block: TextBlock): CheckLink => ({ kind: block.kind, id: block.id });
@@ -152,6 +157,16 @@ export function runChecks(input: CheckInput): Check[] {
         ? { id: "project-details", severity: "warning", title: "The cover and approval pages need more details", detail: `Add ${list(missing as string[])}.`, link: { kind: "tool", tool: "details" } }
         : { id: "project-details", severity: "ok", title: "Your project details are filled in", detail: "" },
     );
+  }
+
+  /* Calculations: every one must work out, and belong in a section. */
+  if (calculations.length) {
+    const broken = calculations.filter((calc) => !calc.result.ok);
+    if (broken.length)
+      checks.push({ id: "calculations-errors", severity: "error", title: `${broken.length} calculation${broken.length === 1 ? " has" : "s have"} mistakes`, detail: `${list(broken.map((calc) => calc.title))}. A calculation with a mistake cannot be worked out.`, link: { kind: "tool", tool: "calculations" } });
+    else checks.push({ id: "calculations-errors", severity: "ok", title: `${calculations.length} calculation${calculations.length === 1 ? "" : "s"} work${calculations.length === 1 ? "s" : ""} out`, detail: "" });
+    const loose = calculations.filter((calc) => !calc.sectionId || !sectionById.has(calc.sectionId));
+    if (loose.length) checks.push({ id: "calculations-unplaced", severity: "warning", title: `${loose.length} calculation${loose.length === 1 ? " is" : "s are"} not placed in a section`, detail: "Choose the section each calculation belongs to so it appears in your report.", link: { kind: "tool", tool: "calculations" } });
   }
 
   /* Structure and content. */

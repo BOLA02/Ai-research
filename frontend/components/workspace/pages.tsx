@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ArrowRight, Image as ImageIcon, Info, Plus, Table2, Trash2 } from "lucide-react";
+import { ArrowRight, Calculator, Image as ImageIcon, Info, Plus, Table2, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { exampleFor } from "@/lib/example/water-level";
 import { useWorkspace } from "@/lib/workspace/provider";
@@ -182,22 +182,25 @@ export function DocumentPage() {
 /* -------------------------------------------------------------- Section */
 
 function Attachments({ sectionId }: { sectionId: string }) {
-  const { project, figures, tables } = useWorkspace();
+  const { project, figures, tables, calculations } = useWorkspace();
   const { index } = useReportIndex();
   const here = figures.filter((figure) => figure.sectionId === sectionId);
+  const hereCalcs = calculations.filter((calculation) => calculation.sectionId === sectionId);
   const hereTables = tables.filter((table) => table.sectionId === sectionId);
   const base = `/projects/${project?.id}`;
   return (
-    <section className="pf-card" style={{ padding: 16, marginTop: 18 }} aria-label="Figures and tables in this section">
-      <div className="pf-label">Figures and tables in this section</div>
-      {here.length + hereTables.length === 0 && <p className="pf-hint" style={{ marginTop: 0 }}>None yet. Add a figure or table here and it is numbered for you.</p>}
+    <section className="pf-card" style={{ padding: 16, marginTop: 18 }} aria-label="Figures, tables and calculations in this section">
+      <div className="pf-label">Figures, tables and calculations in this section</div>
+      {here.length + hereTables.length + hereCalcs.length === 0 && <p className="pf-hint" style={{ marginTop: 0 }}>None yet. Figures and tables are numbered for you, and calculations are worked out for you.</p>}
       <ul className="pf-list" style={{ marginBottom: 10 }}>
         {here.map((figure) => <li key={figure.id}><Link className="pf-row" href={`${base}/figures`}><ImageIcon size={16} aria-hidden /><span className="grow"><strong>Figure {index?.figures.find((item) => item.id === figure.id)?.number}</strong> {figure.caption}<small>[fig:{figure.label}]</small></span></Link></li>)}
+        {hereCalcs.map((calculation) => <li key={calculation.id}><Link className="pf-row" href={`${base}/calculations`}><Calculator size={16} aria-hidden /><span className="grow"><strong>{calculation.title}</strong>{!calculation.result.ok && <small style={{ color: "var(--pf-danger)" }}>Has a mistake to fix</small>}<small>[calc:{calculation.label}]</small></span></Link></li>)}
         {hereTables.map((table) => <li key={table.id}><Link className="pf-row" href={`${base}/tables`}><Table2 size={16} aria-hidden /><span className="grow"><strong>Table {index?.tables.find((item) => item.id === table.id)?.number}</strong> {table.caption}<small>[tab:{table.label}]</small></span></Link></li>)}
       </ul>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Link className="pf-btn pf-btn-sm" href={`${base}/figures?section=${sectionId}`}><Plus size={14} aria-hidden /> Figure</Link>
         <Link className="pf-btn pf-btn-sm" href={`${base}/tables?section=${sectionId}`}><Plus size={14} aria-hidden /> Table</Link>
+        <Link className="pf-btn pf-btn-sm" href={`${base}/calculations?section=${sectionId}`}><Plus size={14} aria-hidden /> Calculation</Link>
       </div>
     </section>
   );

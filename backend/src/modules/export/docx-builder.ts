@@ -3,7 +3,7 @@ import {
   PageNumber, PageReference, Paragraph, Table, TableCell, TableRow, TabStopType, TextRun, WidthType,
 } from "docx";
 import { chapterWord, fillBlanks, fit, italicPieces, toParagraphs, toRoman } from "./export.util";
-import type { ExportModel, FigureBlock, FrontPage, SectionBlock, TableBlock } from "./export.model";
+import type { CalcBlock, ExportModel, FigureBlock, FrontPage, SectionBlock, TableBlock } from "./export.model";
 
 const FONT = "Times New Roman";
 const TWIPS_PER_MM = 56.6929;
@@ -165,11 +165,24 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
     ];
   };
 
+  /** V_pk becomes V with a lowered "pk". */
+  const withSubscripts = (line: string, options: { bold?: boolean } = {}) =>
+    line.split(/(_[\p{L}\p{N}]+)/gu).filter(Boolean).map((piece) => (piece.startsWith("_") && piece.length > 1 ? new TextRun({ text: piece.slice(1), font: FONT, size, subScript: true, bold: options.bold }) : run(piece, { bold: options.bold })));
+
+  /** The working of a calculation, one line per step, kept together on the page. */
+  const calcBlock = (calc: CalcBlock) => {
+    const lines = calc.lines;
+    return [
+      new Paragraph({ keepNext: true, spacing: { before: 120, after: 60, line: SINGLE }, indent: { left: 567 }, children: [run(`${calc.title}`, { bold: true })] }),
+      ...lines.map((line, index) => new Paragraph({ keepNext: index < lines.length - 1, keepLines: true, alignment: AlignmentType.LEFT, spacing: { after: index === lines.length - 1 ? 240 : 60, line: Math.round(1.15 * SINGLE) }, indent: { left: 567 }, children: withSubscripts(line) })),
+    ];
+  };
+
   const sectionBlocks = (section: SectionBlock) => {
     const bookmark = mark(`sec:${section.id}`, "sec", `${section.number} ${section.title}`, section.depth);
     return [
       new Paragraph({ heading: section.depth === 1 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3, keepNext: true, children: [new Bookmark({ id: bookmark, children: [run(`${section.number} ${section.title}`, { bold: true })] })] }),
-      ...textParagraphs(section.text),
+      ...section.body.flatMap((part) => (part.t === "text" ? textParagraphs(part.text) : calcBlock(part.calc))),
       ...section.figures.flatMap(figureBlock),
       ...section.tables.flatMap(tableBlock),
     ];

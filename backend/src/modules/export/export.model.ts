@@ -4,13 +4,19 @@ import type { FormatRules } from "../../templates";
 export type FigureBlock = { id: string; number: number; caption: string; source: string | null; image: { data: Buffer; type: "png" | "jpg"; width: number; height: number } | null };
 export type TableBlock = { id: string; number: number; caption: string; source: string | null; columns: string[]; rows: string[][] };
 
+/** A worked calculation: a title and one line of working per step. */
+export type CalcBlock = { id: string; title: string; lines: string[] };
+
+/** A section's content is text, with calculations placed where the student put them. */
+export type BodyPart = { t: "text"; text: string } | { t: "calc"; calc: CalcBlock };
+
 export type SectionBlock = {
   id: string;
   number: string;
   title: string;
   /** 1 is a section such as 3.2, 2 a subsection such as 3.2.1. */
   depth: number;
-  text: string;
+  body: BodyPart[];
   figures: FigureBlock[];
   tables: TableBlock[];
 };

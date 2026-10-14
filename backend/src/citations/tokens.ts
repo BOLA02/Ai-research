@@ -5,14 +5,15 @@
  *   [@a; @b]                   several sources
  *   [fig:block-diagram]        a figure
  *   [tab:results]              a table
+ *   [calc:filter-capacitor]    a worked calculation
  */
 export type CitationItem = { key: string; locator?: string };
 export type Marker =
   | { kind: "cite"; raw: string; start: number; items: CitationItem[] }
-  | { kind: "fig" | "tab"; raw: string; start: number; label: string };
+  | { kind: "fig" | "tab" | "calc"; raw: string; start: number; label: string };
 
 const CITE = /\[@[^\]]+\]/g;
-const ASSET = /\[(fig|tab):([A-Za-z0-9_-]+)\]/g;
+const ASSET = /\[(fig|tab|calc):([A-Za-z0-9_-]+)\]/g;
 
 export function parseCitation(raw: string): CitationItem[] {
   return raw
@@ -32,7 +33,7 @@ export function parseCitation(raw: string): CitationItem[] {
 export function findMarkers(text: string): Marker[] {
   const found: Marker[] = [];
   for (const match of text.matchAll(CITE)) found.push({ kind: "cite", raw: match[0], start: match.index ?? 0, items: parseCitation(match[0]) });
-  for (const match of text.matchAll(ASSET)) found.push({ kind: match[1] as "fig" | "tab", raw: match[0], start: match.index ?? 0, label: match[2] });
+  for (const match of text.matchAll(ASSET)) found.push({ kind: match[1] as "fig" | "tab" | "calc", raw: match[0], start: match.index ?? 0, label: match[2] });
   return found.sort((a, b) => a.start - b.start);
 }
 

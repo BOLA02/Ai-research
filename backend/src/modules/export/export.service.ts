@@ -4,7 +4,7 @@ import { DEFAULT_TEMPLATE_ID, getTemplate } from "../../templates";
 import { loadReportContext } from "../report/report.context";
 import { buildIndex } from "../report/report.service";
 import { buildDocx } from "./docx-builder";
-import type { ExportModel, FigureBlock, SectionBlock, TableBlock } from "./export.model";
+import type { BodyPart, CalcBlock, ExportModel, FigureBlock, SectionBlock, TableBlock } from "./export.model";
 import { awardFor, departmentLine, imageSize } from "./export.util";
 
 const SPECIAL = new Set(["COVER_PAGE", "FLY_LEAF", "TITLE_PAGE", "APPENDIX", "CUSTOM"]);
@@ -45,12 +45,38 @@ export async function buildExportModel(userId: string, projectId: string): Promi
     rows: (row.rows as string[][]).map((cells) => cells.map(text)),
   }));
 
+  const calcByLabel = new Map(context.calculations.map((row) => [row.label, row]));
+  const asBlock = (row: (typeof context.calculations)[number]): CalcBlock => ({ id: row.id, title: row.title, lines: row.result.lines });
+
+  /** Calculations sit where the student put them: a paragraph that holds only [calc:label]. Any left over go at the end. */
+  const bodyOf = (section: (typeof context.sections)[number]): BodyPart[] => {
+    const parts: BodyPart[] = [];
+    const used = new Set<string>();
+    let pending: string[] = [];
+    const flush = () => {
+      if (pending.length) parts.push({ t: "text", text: pending.join("\n\n") });
+      pending = [];
+    };
+    for (const paragraph of section.content.replace(/\r\n/g, "\n").split(/\n{2,}/)) {
+      const alone = /^\s*\[calc:([A-Za-z0-9_-]+)\]\s*$/.exec(paragraph);
+      const row = alone ? calcByLabel.get(alone[1]) : undefined;
+      if (row) {
+        flush();
+        parts.push({ t: "calc", calc: asBlock(row) });
+        used.add(row.id);
+      } else if (paragraph.trim()) pending.push(text(paragraph));
+    }
+    flush();
+    for (const row of context.calculations) if (row.sectionId === section.id && !used.has(row.id)) parts.push({ t: "calc", calc: asBlock(row) });
+    return parts;
+  };
+
   const sectionBlock = (section: (typeof context.sections)[number]): SectionBlock => ({
     id: section.id,
     number: section.number,
     title: section.title,
     depth: section.depth,
-    text: text(section.content),
+    body: bodyOf(section),
     figures: figures.filter((figure) => figure.sectionId === section.id),
     tables: tables.filter((table) => table.sectionId === section.id),
   });

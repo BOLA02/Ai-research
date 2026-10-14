@@ -36,7 +36,7 @@ function input(overrides: Partial<CheckInput> & { text?: Record<string, string> 
   const style = overrides.style ?? "IEEE";
   return {
     style, template: templates["eee-hnd-design"], documents: [], sections, blocks, sources, figures: [], tables: [],
-    index: { style, citationWrap: citationWrap(style), sources: buildSourceEntries(style, sources, blocks), figures: [], tables: [] },
+    index: { style, citationWrap: citationWrap(style), sources: buildSourceEntries(style, sources, blocks), figures: [], tables: [], calculations: [] },
     ...overrides,
   };
 }
@@ -90,4 +90,16 @@ test("asks for the details that the cover and approval pages need", () => {
   assert.match(byId(missing, "project-details")!.detail, /registration number.*supervisor/);
   const complete = runChecks({ ...input(), details: { studentName: "A", registrationNumber: "R", supervisorNames: "S", hodName: "H" } });
   assert.equal(byId(complete, "project-details")?.severity, "ok");
+});
+
+test("a calculation with a mistake is an error, and one outside any section is a warning", () => {
+  const good = { id: "1", label: "ok", title: "Good", sectionId: "s0", result: { ok: true, variables: [], steps: [] } };
+  const bad = { id: "2", label: "bad", title: "Broken", sectionId: null, result: { ok: false, variables: [], steps: [{ symbol: "x", error: "no value" }] } };
+  const checks = runChecks({ ...input({ sections: [section(0, "3.1", null, "See [calc:ok] and [calc:ghost].", 2)] }), calculations: [good, bad] });
+  assert.equal(byId(checks, "calculations-errors")?.severity, "error");
+  assert.match(byId(checks, "calculations-errors")!.detail, /Broken/);
+  assert.equal(byId(checks, "calculations-unplaced")?.severity, "warning");
+  assert.match(byId(checks, "unknown-refs")!.detail, /\[calc:ghost\]/);
+  const fine = runChecks({ ...input({ sections: [section(0, "3.1", null, "See [calc:ok].", 2)] }), calculations: [good] });
+  assert.equal(byId(fine, "calculations-errors")?.severity, "ok");
 });

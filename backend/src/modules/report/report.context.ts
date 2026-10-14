@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { parseAuthors, type IndexedSource, type TextBlock } from "../../citations";
+import { evaluateCalculation, type Step, type Variable } from "../../calc/calculation";
 import { getProject } from "../projects";
 import type { SectionInfo } from "./report.numbering";
 
@@ -8,7 +9,7 @@ export type ReportContext = Awaited<ReturnType<typeof loadReportContext>>;
 /** Everything needed to number items, build the bibliography and run the checks, in report order. */
 export async function loadReportContext(userId: string, projectId: string) {
   const { project } = await getProject(userId, projectId);
-  const [documents, chapters, sourceRows, figures, tables] = await Promise.all([
+  const [documents, chapters, sourceRows, figures, tables, calculationRows] = await Promise.all([
     prisma.projectDocument.findMany({ where: { projectId }, orderBy: { position: "asc" } }),
     prisma.chapter.findMany({ where: { projectId }, orderBy: { position: "asc" }, include: { sections: { orderBy: { position: "asc" } } } }),
     prisma.source.findMany({ where: { projectId }, orderBy: { createdAt: "asc" } }),
@@ -17,6 +18,7 @@ export async function loadReportContext(userId: string, projectId: string) {
       select: { id: true, label: true, caption: true, sectionId: true, sourceNote: true, isOriginal: true, mimeType: true, position: true, createdAt: true },
     }),
     prisma.reportTable.findMany({ where: { projectId }, select: { id: true, label: true, caption: true, sectionId: true, sourceNote: true, position: true, createdAt: true } }),
+    prisma.calculation.findMany({ where: { projectId }, orderBy: [{ position: "asc" }, { createdAt: "asc" }] }),
   ]);
 
   const sections: SectionInfo[] = [];
@@ -62,5 +64,7 @@ export async function loadReportContext(userId: string, projectId: string) {
     doi: row.doi,
   }));
 
-  return { project, documents, chapters, sections, blocks, sources, figures, tables };
+  const calculations = calculationRows.map((row) => ({ ...row, result: evaluateCalculation({ variables: row.variables as Variable[], steps: row.steps as Step[], note: row.note }) }));
+
+  return { project, documents, chapters, sections, blocks, sources, figures, tables, calculations };
 }

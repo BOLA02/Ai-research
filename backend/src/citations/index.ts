@@ -23,6 +23,9 @@ export type SourceEntry = {
 
 export type NumberedItem = { id: string; label: string; number: number };
 
+/** A worked calculation, already evaluated, as lines of working ready for the report. */
+export type CalculationEntry = { id: string; label: string; title: string; lines: string[] };
+
 export type ReportIndex = {
   style: ReferenceStyle;
   citationWrap: { open: string; close: string; separator: string };
@@ -30,6 +33,7 @@ export type ReportIndex = {
   sources: SourceEntry[];
   figures: NumberedItem[];
   tables: NumberedItem[];
+  calculations: CalculationEntry[];
 };
 
 export function formatSource(source: SourceData, style: ReferenceStyle) {
@@ -83,6 +87,7 @@ export function resolveText(text: string, index: ReportIndex): string {
   const bySourceKey = new Map(index.sources.map((entry) => [entry.citeKey, entry]));
   const figures = new Map(index.figures.map((item) => [item.label, item]));
   const tables = new Map(index.tables.map((item) => [item.label, item]));
+  const calculations = new Map((index.calculations ?? []).map((item) => [item.label, item]));
   const { open, close, separator } = index.citationWrap;
 
   let out = "";
@@ -97,6 +102,10 @@ export function resolveText(text: string, index: ReportIndex): string {
         return item.locator ? `${entry.inTextCore}, ${item.locator}` : entry.inTextCore;
       });
       out += `${open}${parts.join(separator)}${close}`;
+    } else if (marker.kind === "calc") {
+      // The working is written out in full, one line per step.
+      const item = calculations.get(marker.label);
+      out += item ? item.lines.join("\n") : "Calculation ?";
     } else {
       const item = (marker.kind === "fig" ? figures : tables).get(marker.label);
       const word = marker.kind === "fig" ? "Figure" : "Table";

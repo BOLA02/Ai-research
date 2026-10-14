@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AlertCircle, BookMarked, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Loader2, Plus, Table2 } from "lucide-react";
+import { AlertCircle, BookMarked, Calculator, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Loader2, Plus, Table2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useReportIndex } from "@/lib/workspace/hooks";
 import { useWorkspace, type ContentTarget } from "@/lib/workspace/provider";
@@ -31,7 +31,7 @@ type Props = {
 };
 
 export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner, after, coachable }: Props) {
-  const { project, sources, figures, tables, setContent, saveState, flushSaves } = useWorkspace();
+  const { project, sources, figures, tables, calculations, setContent, saveState, flushSaves } = useWorkspace();
   const { index } = useReportIndex();
   const area = useRef<HTMLTextAreaElement>(null);
   const caret = useRef<number | null>(null);
@@ -69,12 +69,18 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
     return () => document.removeEventListener("mousedown", close);
   }, [menu]);
 
-  const insert = (marker: string) => {
+  const insert = (marker: string, options: { ownLine?: boolean } = {}) => {
     const element = area.current;
     const start = element?.selectionStart ?? content.length;
     const end = element?.selectionEnd ?? content.length;
-    caret.current = start + marker.length;
-    setContent(target, `${content.slice(0, start)}${marker}${content.slice(end)}`);
+    const before = content.slice(0, start);
+    const after = content.slice(end);
+    // A calculation stands on a line of its own, so give it a blank line above and below.
+    const lead = !options.ownLine || before === "" || before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+    const tail = !options.ownLine || after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
+    const text = `${lead}${marker}${tail}`;
+    caret.current = start + text.length;
+    setContent(target, `${before}${text}${after}`);
     setMenu(false);
   };
 
@@ -137,6 +143,9 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
                   <div className="hd"><Table2 size={11} aria-hidden /> Table</div>
                   {tables.length === 0 && <div style={{ padding: "6px 10px", fontSize: 13 }} className="pf-muted">No tables yet. <Link href={`${base}/tables`}>Add one</Link></div>}
                   {tables.map((table) => <button key={table.id} role="menuitem" className="item" onClick={() => insert(`[tab:${table.label}]`)}>Table {index?.tables.find((item) => item.id === table.id)?.number ?? ""} <span className="pf-muted" style={{ fontSize: 12 }}>{table.caption}</span></button>)}
+                  <div className="hd"><Calculator size={11} aria-hidden /> Calculation</div>
+                  {calculations.length === 0 && <div style={{ padding: "6px 10px", fontSize: 13 }} className="pf-muted">No calculations yet. <Link href={`${base}/calculations`}>Add one</Link></div>}
+                  {calculations.map((calculation) => <button key={calculation.id} role="menuitem" className="item" onClick={() => insert(`[calc:${calculation.label}]`, { ownLine: true })}>{calculation.title}</button>)}
                 </div>
               )}
             </div>

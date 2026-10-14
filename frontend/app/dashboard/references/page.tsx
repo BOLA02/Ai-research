@@ -1,3 +1,49 @@
 "use client";
-import Link from "next/link";import {useMemo,useState} from "react";import {BookOpen} from "lucide-react";import {EmptyState,PageHeader} from "@/components/ui";import {formatCitation} from "@/lib/fixtures";import {useProjects} from "@/lib/project-store";
-export default function Page(){const{projects}=useProjects(),[query,setQuery]=useState("");const rows=useMemo(()=>projects.flatMap(project=>project.sources.map(source=>({project,source}))).filter(({source})=>`${source.title} ${source.authors.join(" ")}`.toLowerCase().includes(query.toLowerCase())),[projects,query]);return <div className="content narrow-content"><PageHeader eyebrow="Research library" title="References"/><p className="muted page-intro">A global view of references across your projects. Edit a reference from its connected project workspace.</p><div className="manager-toolbar"><input className="field" aria-label="Search all references" placeholder="Search all references" value={query} onChange={e=>setQuery(e.target.value)}/></div>{rows.length?<div className="record-list">{rows.map(({project,source})=><article className="card record" key={`${project.id}-${source.id}`}><div><div className="eyebrow">{project.title}</div><h2>{source.title}</h2><p className="muted">{source.authors.join(", ")} · {source.year??"n.d."}</p><p>{formatCitation(source,project.referenceStyle)}</p></div><Link className="btn btn-secondary" href={`/projects/${project.id}/references`}>Open project</Link></article>)}</div>:<EmptyState title="No references found" copy="Project references will appear here as you add them." action={<BookOpen size={18}/>}/>}</div>}
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { BookMarked } from "lucide-react";
+import { api } from "@/lib/api";
+import type { ApiProject, ApiSource } from "@/lib/workspace/types";
+
+type Row = { project: ApiProject; sources: ApiSource[] };
+
+export default function Page() {
+  const [rows, setRows] = useState<Row[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    api<{ projects: ApiProject[] }>("/projects")
+      .then(async ({ projects }) =>
+        Promise.all(projects.map(async (project) => ({ project, sources: (await api<{ sources: ApiSource[] }>(`/projects/${project.id}/sources`)).sources }))),
+      )
+      .then(setRows)
+      .catch(() => setError("We couldn't load your references. Check your connection and refresh."));
+  }, []);
+
+  return (
+    <main className="pf-page">
+      <div className="pf-page-head">
+        <div>
+          <div className="pf-eyebrow">Your workspace</div>
+          <h1>References</h1>
+          <p className="pf-lede">Sources are kept with each project, so they are cited and numbered in the right report. Open a project to add or edit them.</p>
+        </div>
+      </div>
+      {error && <div className="pf-alert" role="alert">{error}</div>}
+      {rows && rows.length === 0 && <div className="pf-empty"><BookMarked size={28} aria-hidden color="var(--pf-brand)" /><h3>No projects yet</h3><Link className="pf-btn pf-btn-primary" href="/dashboard/projects/new">Start a project</Link></div>}
+      {rows && rows.length > 0 && (
+        <ul className="pf-list">
+          {rows.map(({ project, sources }) => (
+            <li key={project.id}>
+              <Link className="pf-row" href={`/projects/${project.id}/references`}>
+                <BookMarked size={18} aria-hidden />
+                <span className="grow"><strong>{project.title}</strong><small>{sources.length} source{sources.length === 1 ? "" : "s"} · {project.referenceStyle ?? "IEEE"} referencing</small></span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  );
+}

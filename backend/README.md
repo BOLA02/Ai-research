@@ -45,3 +45,13 @@ The coach reviews a section (or the abstract) and gives feedback: what works, wh
 - **Guardrails:** at least 30 and at most 8000 words; a daily allowance per student (`AI_DAILY_LIMIT`, default 20, counted in UTC) and a per-minute limit (`AI_BURST_PER_MINUTE`, default 6); a failed or declined review gives its allowance back; quotes the model attributes to the student are checked against the text and dropped if they are not there.
 - **Model:** `AI_MODEL`, default `claude-opus-5-5`, with `effort: "medium"`, structured JSON output, and `fallbacks: "default"` so a request declined by a safety classifier is retried on the model Anthropic recommends.
 - **Privacy:** the student's text is sent to Anthropic to generate the feedback and is not stored by ProjectForge. The interface says so.
+
+## Calculations
+
+A calculation is a set of known values and a list of steps. The server does the arithmetic, so a wrong answer can't be typed in, and writes each step the way a report shows it: the formula, then the numbers, then the answer with its unit, for example `R_B = (V_in − V_BE) / I_B = (12 − 0.7) / 0.003 = 3.767 kΩ`.
+
+- `calculations` (CRUD) and `calculations/preview` (POST `{variables, steps, note}`) under `/api/projects/:projectId`. Preview works a draft out without saving it, for live results while a student types.
+- Values are written like `12`, `4.7k`, `100m` or `1u`. Results get an engineering prefix and four significant figures, or a fixed number of decimals if the step asks for it.
+- Formulas support `+ − × ÷ ^`, brackets and `sqrt`, `parallel`, `e12` and `e24` (nearest standard resistor value), `sin`, `cos`, `tan`, `ln`, `log10`, `exp`, `abs`, `min`, `max`, `pow`, `round`, `ceil`, `floor`. A step can use the results of earlier steps. The formula is read into a tree and evaluated. It is never run as code (`src/calc/`).
+- In text, `[calc:label]` on a line of its own puts the working there. A calculation not mentioned in the text is written at the end of its section. In the Word export the lines are indented, kept together on the page, and variable subscripts such as `V_pk` are lowered.
+- The checks report calculations that have mistakes (an error) or sit in no section (a warning).

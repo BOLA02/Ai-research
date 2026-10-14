@@ -106,10 +106,15 @@ test("APA lists sources alphabetically by first author", () => {
 });
 
 test("resolveText turns markers into numbers or author-year citations", () => {
-  const ieee = { style: "IEEE" as const, citationWrap: citationWrap("IEEE"), sources: buildSourceEntries("IEEE", sources, blocks), figures: [{ id: "f", label: "block", number: 1 }], tables: [] };
+  const ieee = { style: "IEEE" as const, citationWrap: citationWrap("IEEE"), sources: buildSourceEntries("IEEE", sources, blocks), figures: [{ id: "f", label: "block", number: 1 }], tables: [], calculations: [{ id: "c", label: "supply", title: "Power supply", lines: ["V_pk = V_rms × √(2) = 12 × √(2) = 16.97 V", "Chosen: 1000 µF"] }] };
   assert.equal(resolveText("See [@glover2009, p. 33], [@adachi2012; @glover2009] and [fig:block], [tab:none].", ieee), "See [2, p. 33], [1, 2] and Figure 1, Table ?.");
   const apa = { ...ieee, style: "APA" as const, citationWrap: citationWrap("APA"), sources: buildSourceEntries("APA", sources, blocks) };
   assert.equal(resolveText("See [@glover2009, p. 33] and [@glover2009; @adachi2012].", apa), "See (Glover & Grant, 2009, p. 33) and (Glover & Grant, 2009; Adachi, 2012).");
+});
+
+test("a calculation marker is replaced by its working, one line per step", () => {
+  const index = { style: "IEEE" as const, citationWrap: citationWrap("IEEE"), sources: [], figures: [], tables: [], calculations: [{ id: "c", label: "supply", title: "Power supply", lines: ["a = 1", "b = 2"] }] };
+  assert.equal(resolveText("Shown below.\n\n[calc:supply]\n\nDone. [calc:nothing]", index), "Shown below.\n\na = 1\nb = 2\n\nDone. Calculation ?");
 });
 
 test("findMarkers reads citations and figure references in order", () => {

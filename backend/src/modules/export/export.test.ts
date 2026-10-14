@@ -19,7 +19,7 @@ const model: ExportModel = {
     { id: "t", type: "TABLE_OF_CONTENTS", title: "Table of Contents", text: "" },
     { id: "lf", type: "LIST_OF_FIGURES", title: "List of Figures", text: "" },
   ],
-  chapters: [{ id: "c1", number: 1, title: "Introduction", sections: [{ id: "s1", number: "1.1", title: "Background", depth: 1, text: "First paragraph.\n\nSecond paragraph.", figures: [{ id: "f1", number: 1, caption: "A picture", source: null, image: { data: png, type: "png", width: 1, height: 1 } }], tables: [{ id: "t1", number: 1, caption: "A table", source: "Measured", columns: ["A", "B"], rows: [["1", "2"]] }] }] }],
+  chapters: [{ id: "c1", number: 1, title: "Introduction", sections: [{ id: "s1", number: "1.1", title: "Background", depth: 1, body: [{ t: "text", text: "First paragraph.\n\nSecond paragraph." }, { t: "calc", calc: { id: "k", title: "Filter capacitor", lines: ["C = I / (2 × f × V_r) = 0.1 / (2 × 50 × 1) = 1 mF", "Chosen: 1000 µF"] } }], figures: [{ id: "f1", number: 1, caption: "A picture", source: null, image: { data: png, type: "png", width: 1, height: 1 } }], tables: [{ id: "t1", number: 1, caption: "A table", source: "Measured", columns: ["A", "B"], rows: [["1", "2"]] }] }] }],
   references: [{ citeKey: "a", number: 1, formatted: "A. Author, *A Book*. City: Pub, 2020." }],
   appendices: [{ id: "x", title: "Code listing", text: "int main() {}" }],
   figures: [{ id: "f1", number: 1, caption: "A picture" }], tables: [{ id: "t1", number: 1, caption: "A table" }],
@@ -82,6 +82,15 @@ test("the table of contents is built from bookmarks and asks Word to refresh pag
   assert.match(document, /PAGEREF/);
   assert.match(document, /w:bookmarkStart/);
   assert.match(settings, /w:updateFields/);
+});
+
+test("a calculation is written out line by line with lowered subscripts", async () => {
+  const { document } = await parts();
+  assert.match(document, /Filter capacitor/);
+  assert.match(document, /C = I \/ \(2 × f × /);
+  assert.match(document, /<w:vertAlign w:val="subscript"\/>[\s\S]{0,200}<w:t[^>]*>r<\/w:t>/);
+  assert.match(document, /Chosen: 1000 µF/);
+  assert.match(document, /<w:keepNext\/>/);
 });
 
 test("the declaration is filled from the project details", async () => {

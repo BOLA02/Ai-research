@@ -110,6 +110,7 @@ model Project {
   sources        Source[]
   figures        Figure[]
   tables         ReportTable[]
+  calculations   Calculation[]
 
   @@index([ownerId])
 }
@@ -161,6 +162,7 @@ model Section {
   children        Section[] @relation("SectionHierarchy")
   figures         Figure[]
   tables          ReportTable[]
+  calculations    Calculation[]
 
   @@index([chapterId, position])
   @@index([parentSectionId])
@@ -261,4 +263,24 @@ model AiUsage {
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, day])
+}
+
+model Calculation {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @db.Uuid
+  sectionId String?  @db.Uuid
+  label     String   @db.VarChar(60)
+  title     String   @db.VarChar(300)
+  note      String?  @db.VarChar(500)
+  variables Json     @default("[]")
+  steps     Json     @default("[]")
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section   Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, label])
+  @@index([projectId])
+  @@index([sectionId])
 }
