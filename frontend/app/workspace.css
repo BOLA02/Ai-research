@@ -449,3 +449,20 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .hp-main h1, .hp-main h2, .hp-main h3 { font-weight: 700; }
 .hp-main ul { list-style: disc; }
 .hp-main summary { list-style: revert; }
+
+/* ------------------------------------------------------------ Sign-in pages use the app's theme */
+.login-page { --brand: var(--pf-brand); --ink: var(--pf-ink); --muted: var(--pf-muted); --line: var(--pf-line); background: var(--pf-canvas); font-family: var(--pf-sans); color: var(--pf-ink); }
+.login-panel { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: 14px; box-shadow: var(--pf-shadow); }
+.login-brand { color: var(--pf-ink); }
+.login-brand svg { background: var(--pf-brand); color: #fff; border-radius: 7px; padding: 5px; box-sizing: content-box; width: 18px; height: 18px; }
+.login-panel h1 { font-weight: 700; letter-spacing: -0.02em; }
+.login-panel .eyebrow { color: var(--pf-brand); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; }
+.login-panel .field { min-height: 46px; border: 1px solid var(--pf-line-strong); border-radius: 8px; background: #fff; font: inherit; font-size: 16px; }
+.login-panel .field:focus { outline: 2px solid var(--pf-brand); outline-offset: 0; border-color: var(--pf-brand); }
+.login-panel .label { font-size: 13px; font-weight: 600; color: var(--pf-ink); }
+.login-panel .btn { min-height: 46px; border-radius: 8px; font-weight: 600; font-family: inherit; }
+.login-panel .btn-primary { background: var(--pf-brand); color: #fff; border: 1px solid var(--pf-brand); }
+.login-panel .btn-primary:hover:not(:disabled) { background: var(--pf-brand-strong); }
+.login-panel a { color: var(--pf-brand-strong); font-weight: 600; }
+.login-error { border-color: #e9b9b0; background: var(--pf-danger-soft); color: var(--pf-danger); border-radius: 8px; }
+.login-panel .muted { color: var(--pf-ink-soft); }
