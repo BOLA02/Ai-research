@@ -20,7 +20,6 @@ type Props = {
   guidance: Guidance;
   optional?: boolean;
   custom?: boolean;
-  exampleHref?: string;
   placeholder: string;
   neighbours: { prev?: WritingItem; next?: WritingItem };
   banner?: React.ReactNode;
@@ -30,7 +29,7 @@ type Props = {
   coachable?: boolean;
 };
 
-export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner, after, coachable }: Props) {
+export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, placeholder, neighbours, banner, after, coachable }: Props) {
   const { project, sources, figures, tables, calculations, setContent, saveState, flushSaves } = useWorkspace();
   const { index } = useReportIndex();
   const area = useRef<HTMLTextAreaElement>(null);
@@ -195,7 +194,6 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
         guidance={guidance}
         optional={optional}
         custom={custom}
-        exampleHref={exampleHref}
         onUsePrompt={usePrompt}
         extra={target.kind === "section" || coachable ? <CoachPanel target={{ kind: target.kind, id: target.id }} content={content} onUseQuestion={usePrompt} /> : null}
       />

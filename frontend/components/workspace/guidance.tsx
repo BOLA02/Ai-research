@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { BookOpen, Compass, GraduationCap } from "lucide-react";
+import { Compass, GraduationCap } from "lucide-react";
 import type { Guidance } from "@/lib/workspace/types";
 import { Tour, hasSeen, markSeen, type TourStep } from "./tour";
 
@@ -10,8 +9,6 @@ type Props = {
   guidance: Guidance;
   optional?: boolean;
   custom?: boolean;
-  /** Link to the matching part of the worked example, when there is one. */
-  exampleHref?: string;
   /** Extra cards under the guidance, such as the writing coach. */
   extra?: React.ReactNode;
   /** Called with a prompt the student chose to answer. */
@@ -25,7 +22,7 @@ const SEEN = "pf-seen-guide";
  * The detail (questions, tips, coach, example) is shown one piece at a time
  * in a spotlight guide so the student is never faced with everything at once.
  */
-export function GuidancePanel({ guidance, optional, custom, exampleHref, extra, onUsePrompt }: Props) {
+export function GuidancePanel({ guidance, optional, custom, extra, onUsePrompt }: Props) {
   const [touring, setTouring] = useState(false);
   const hasPurpose = guidance.purpose.length > 0;
 
@@ -69,16 +66,8 @@ export function GuidancePanel({ guidance, optional, custom, exampleHref, extra, 
         body: <p>When you have written something, the writing coach reads it and points out what to improve. It never writes your report for you.</p>,
       });
     }
-    if (exampleHref) {
-      list.push({
-        target: "example",
-        placement: "left",
-        title: "See a finished example",
-        body: <p>Not sure how it should look? Open the matching part of the worked example in a new tab.</p>,
-      });
-    }
     return list;
-  }, [guidance, hasPurpose, custom, optional, extra, exampleHref, onUsePrompt]);
+  }, [guidance, hasPurpose, custom, optional, extra, onUsePrompt]);
 
   // Offer the guide automatically the first time a student reaches a writing page.
   useEffect(() => {
@@ -105,11 +94,6 @@ export function GuidancePanel({ guidance, optional, custom, exampleHref, extra, 
             </button>
           )}
         </section>
-      )}
-      {exampleHref && (
-        <Link data-tour="example" className="pf-btn pf-btn-sm" href={exampleHref} target="_blank" style={{ justifySelf: "start" }}>
-          <BookOpen size={14} aria-hidden /> See this in the worked example
-        </Link>
       )}
       {extra && <div data-tour="coach">{extra}</div>}
       {touring && <Tour steps={steps} label="Section guide" onClose={close} />}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, PenLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, PenLine } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 type Level = "beginner" | "intermediate" | "confident";
@@ -23,24 +23,21 @@ const questions = [
   },
 ];
 
-const outcome: Record<Level, { heading: string; copy: string; primary: [string, string]; secondary: [string, string] }> = {
+const outcome: Record<Level, { heading: string; copy: string; primary: [string, string]; }> = {
   beginner: {
-    heading: "Let's start with a finished example",
-    copy: "Most students find a report much easier to write after they have seen a good one. The walkthrough takes you through a complete project, with notes on why each part works.",
-    primary: ["Start the walkthrough", "/example"],
-    secondary: ["Go to my projects", "/dashboard"],
+    heading: "We'll guide you step by step",
+    copy: "Every section has a short guide that spotlights what to write and why, one step at a time. You can reopen it whenever you like.",
+    primary: ["Go to my projects", "/dashboard"],
   },
   intermediate: {
     heading: "You know the basics",
-    copy: "The guidance beside every section will fill the gaps. The worked example is always there if you want to check how a part should look.",
+    copy: "The guidance beside every section will fill the gaps. ",
     primary: ["Go to my projects", "/dashboard"],
-    secondary: ["Browse the example", "/example"],
   },
   confident: {
     heading: "You're ready to write",
-    copy: "Your department's structure and format are built in, so you can focus on the content. The worked example stays available if you ever want a reference.",
+    copy: "Your department's structure and format are built in, so you can focus on the content. ",
     primary: ["Go to my projects", "/dashboard"],
-    secondary: ["Browse the example", "/example"],
   },
 };
 
@@ -91,9 +88,8 @@ export function ReadinessCheck() {
         <p className="pf-lede">{result.copy}</p>
         <div className="pf-actions" style={{ marginTop: 24 }}>
           <Link className="pf-btn pf-btn-primary" href={result.primary[1]}>
-            {level === "beginner" ? <BookOpen size={16} aria-hidden /> : <PenLine size={16} aria-hidden />} {result.primary[0]}
+            <PenLine size={16} aria-hidden /> {result.primary[0]}
           </Link>
-          <Link className="pf-btn" href={result.secondary[1]}>{result.secondary[0]}</Link>
         </div>
       </main>
     );

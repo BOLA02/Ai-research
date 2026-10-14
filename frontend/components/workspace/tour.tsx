@@ -29,7 +29,9 @@ function find(target: string): HTMLElement | null {
   const element = document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
   if (!element) return null;
   const rect = element.getBoundingClientRect();
-  return rect.width > 0 && rect.height > 0 ? element : null;
+  // Off to the side (like the outline drawer on a phone) counts as not there.
+  const onScreen = rect.right > 0 && rect.left < window.innerWidth;
+  return rect.width > 0 && rect.height > 0 && onScreen ? element : null;
 }
 
 /** Remember whether a guide has been seen. Storage can be blocked, so never rely on it. */

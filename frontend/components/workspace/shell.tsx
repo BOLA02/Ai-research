@@ -58,7 +58,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="pf-app">
       <div className="pf-mobilebar">
-        <button className="pf-icon-btn" onClick={() => setOpen(true)} aria-label="Open outline"><Menu size={20} /></button>
+        <button data-tour="menu" className="pf-icon-btn" onClick={() => setOpen(true)} aria-label="Open outline"><Menu size={20} /></button>
         <strong>{project.title}</strong>
       </div>
       <div className={`pf-scrim ${open ? "open" : ""}`} onClick={() => setOpen(false)} />

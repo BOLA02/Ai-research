@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Calculator, Compass, Image as ImageIcon, Info, Plus, Table2, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { exampleFor } from "@/lib/example/water-level";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, chapterTemplate, documentGuidance, flattenTree, isStarted, sectionGuidance, wordCount, writingItems, type SectionNode } from "@/lib/workspace/outline";
 import { useReportIndex } from "@/lib/workspace/hooks";
@@ -18,7 +17,6 @@ function useItems() {
   return useMemo(() => (project ? writingItems(project.id, documents, chapters, template) : []), [project, documents, chapters, template]);
 }
 
-const exampleHref = (part?: { id: string }) => (part ? `/example/${part.id}` : undefined);
 
 function NotFound({ what }: { what: string }) {
   const { project } = useWorkspace();
@@ -36,6 +34,7 @@ function NotFound({ what }: { what: string }) {
 const HOME_SEEN = "pf-seen-tour";
 
 const HOME_STEPS: TourStep[] = [
+  { target: "menu", placement: "bottom", title: "Your outline", body: <p>Tap here to open the outline: every front-matter page, chapter and tool, with your progress. (On a bigger screen it sits beside your work.)</p> },
   { target: "progress", placement: "right", title: "Your progress", body: <p>This bar fills as you start each part of your report, so you always know how far along you are.</p> },
   { target: "front", placement: "right", title: "Front matter", body: <p>The title page, abstract, acknowledgements and the lists. Some of these are built for you from the rest of your report.</p> },
   { target: "chapters", placement: "right", title: "Your chapters", body: <p>Write one section at a time. Each section has its own guide that says what examiners look for. You choose your own chapter titles.</p> },
@@ -166,7 +165,7 @@ export function DocumentPage() {
             </div>
           )}
         </div>
-        <GuidancePanel guidance={{ ...guidance, prompts: [] }} exampleHref={exampleHref(exampleFor({ documentType: doc.type }))} />
+        <GuidancePanel guidance={{ ...guidance, prompts: [] }} />
       </div>
     );
   }
@@ -188,7 +187,7 @@ export function DocumentPage() {
         content={doc.content}
         guidance={guidance}
         optional={info?.optional}
-        exampleHref={exampleHref(exampleFor({ documentType: doc.type }))}
+       
         placeholder={doc.type === "ABSTRACT" ? "Write this last. Cover what you did, how, what you found and what it means." : "Start writing…"}
         neighbours={{ prev: items[index - 1], next: items[index + 1] }}
         banner={banner}
@@ -257,7 +256,7 @@ export function SectionPage() {
       guidance={guidance}
       optional={optional}
       custom={custom}
-      exampleHref={exampleHref(exampleFor({ templateKey: section.templateKey }))}
+     
       placeholder="Start writing. Use the questions on the right if you're not sure where to begin."
       neighbours={{ prev: items[index - 1], next: items[index + 1] }}
       after={<Attachments sectionId={section.id} />}
