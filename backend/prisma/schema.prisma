@@ -18,10 +18,26 @@ enum ProjectMemberRole {
   VIEWER
 }
 
+enum SourceType {
+  BOOK
+  BOOK_CHAPTER
+  JOURNAL
+  CONFERENCE
+  WEBSITE
+  THESIS
+  REPORT
+  STANDARD
+  PATENT
+  OTHER
+}
+
 enum ProjectDocumentType {
   COVER_PAGE
   TITLE_PAGE
   CERTIFICATION
+  APPROVAL_PAGE
+  FLY_LEAF
+  LIST_OF_SYMBOLS_ABBREVIATIONS
   DECLARATION
   DEDICATION
   ACKNOWLEDGEMENT
@@ -41,11 +57,15 @@ model User {
   passwordHash String
   role         UserRole        @default(STUDENT)
   isActive     Boolean         @default(true)
+  experienceLevel String?      @db.VarChar(20)
+  onboardedAt  DateTime?       @db.Timestamptz(6)
   createdAt    DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime        @updatedAt @db.Timestamptz(6)
   projects     Project[]       @relation("ProjectOwner")
   memberships  ProjectMember[]
   sessions     Session[]
+  aiUsage      AiUsage[]
+  passwordResets PasswordReset[]
 
   @@index([email, isActive])
 }
@@ -71,6 +91,16 @@ model Project {
   programme      String?           @db.VarChar(255)
   projectType    String?           @db.VarChar(100)
   referenceStyle String?           @db.VarChar(30)
+  templateId     String?           @db.VarChar(60)
+  studentName          String?     @db.VarChar(200)
+  registrationNumber   String?     @db.VarChar(60)
+  supervisorNames      String?     @db.VarChar(500)
+  coordinatorName      String?     @db.VarChar(200)
+  hodName              String?     @db.VarChar(200)
+  externalExaminerName String?     @db.VarChar(200)
+  school               String?     @db.VarChar(200)
+  college              String?     @db.VarChar(200)
+  graduationYear       Int?
   ownerId        String            @db.Uuid
   createdAt      DateTime          @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime          @updatedAt @db.Timestamptz(6)
@@ -78,6 +108,10 @@ model Project {
   members        ProjectMember[]
   documents      ProjectDocument[]
   chapters       Chapter[]
+  sources        Source[]
+  figures        Figure[]
+  tables         ReportTable[]
+  calculations   Calculation[]
 
   @@index([ownerId])
 }
@@ -90,6 +124,7 @@ model ProjectDocument {
   content   String              @default("")
   position  Int                 @default(0)
   isEnabled Boolean             @default(true)
+  numbering String              @default("roman") @db.VarChar(10)
   createdAt DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt DateTime            @updatedAt @db.Timestamptz(6)
   project   Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -102,6 +137,7 @@ model Chapter {
   projectId String    @db.Uuid
   number    Int
   title     String    @db.VarChar(500)
+  templateKey String?  @db.VarChar(60)
   position  Int
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @db.Timestamptz(6)
@@ -117,6 +153,7 @@ model Section {
   chapterId       String    @db.Uuid
   parentSectionId String?   @db.Uuid
   title           String    @db.VarChar(500)
+  templateKey     String?   @db.VarChar(60)
   content         String    @default("")
   position        Int
   createdAt       DateTime  @default(now()) @db.Timestamptz(6)
@@ -124,6 +161,9 @@ model Section {
   chapter         Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   parent          Section?  @relation("SectionHierarchy", fields: [parentSectionId], references: [id], onDelete: Cascade)
   children        Section[] @relation("SectionHierarchy")
+  figures         Figure[]
+  tables          ReportTable[]
+  calculations    Calculation[]
 
   @@index([chapterId, position])
   @@index([parentSectionId])
@@ -140,4 +180,121 @@ model ProjectMember {
 
   @@unique([projectId, userId])
   @@index([userId])
+}
+
+model Source {
+  id             String     @id @default(uuid()) @db.Uuid
+  projectId      String     @db.Uuid
+  citeKey        String     @db.VarChar(60)
+  type           SourceType
+  authors        Json       @default("[]")
+  editors        Json       @default("[]")
+  title          String     @db.VarChar(1000)
+  containerTitle String?    @db.VarChar(500)
+  year           Int?
+  month          Int?
+  day            Int?
+  volume         String?    @db.VarChar(30)
+  issue          String?    @db.VarChar(30)
+  pages          String?    @db.VarChar(40)
+  edition        String?    @db.VarChar(30)
+  publisher      String?    @db.VarChar(300)
+  place          String?    @db.VarChar(200)
+  institution    String?    @db.VarChar(300)
+  degree         String?    @db.VarChar(100)
+  number         String?    @db.VarChar(100)
+  url            String?    @db.VarChar(2000)
+  doi            String?    @db.VarChar(200)
+  createdAt      DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime   @updatedAt @db.Timestamptz(6)
+  project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, citeKey])
+  @@index([projectId])
+}
+
+model Figure {
+  id         String   @id @default(uuid()) @db.Uuid
+  projectId  String   @db.Uuid
+  sectionId  String?  @db.Uuid
+  label      String   @db.VarChar(60)
+  caption    String   @db.VarChar(1000)
+  sourceNote String?  @db.VarChar(1000)
+  isOriginal Boolean  @default(true)
+  altText    String?  @db.VarChar(500)
+  imageData  Bytes?
+  mimeType   String?  @db.VarChar(60)
+  position   Int      @default(0)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section    Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, label])
+  @@index([projectId])
+  @@index([sectionId])
+}
+
+model ReportTable {
+  id         String   @id @default(uuid()) @db.Uuid
+  projectId  String   @db.Uuid
+  sectionId  String?  @db.Uuid
+  label      String   @db.VarChar(60)
+  caption    String   @db.VarChar(1000)
+  sourceNote String?  @db.VarChar(1000)
+  columns    Json     @default("[]")
+  rows       Json     @default("[]")
+  position   Int      @default(0)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section    Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, label])
+  @@index([projectId])
+  @@index([sectionId])
+}
+
+/// How many writing-coach reviews a student has used on a given day (UTC).
+model AiUsage {
+  id     String   @id @default(uuid()) @db.Uuid
+  userId String   @db.Uuid
+  day    DateTime @db.Date
+  count  Int      @default(0)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+}
+
+model Calculation {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @db.Uuid
+  sectionId String?  @db.Uuid
+  label     String   @db.VarChar(60)
+  title     String   @db.VarChar(300)
+  note      String?  @db.VarChar(500)
+  variables Json     @default("[]")
+  steps     Json     @default("[]")
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section   Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, label])
+  @@index([projectId])
+  @@index([sectionId])
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime  @db.Timestamptz(6)
+  usedAt    DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

@@ -1,0 +1,2 @@
+ALTER TABLE "User" ADD COLUMN "experienceLevel" VARCHAR(20);
+ALTER TABLE "User" ADD COLUMN "onboardedAt" TIMESTAMPTZ(6);

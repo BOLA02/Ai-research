@@ -7,6 +7,8 @@ export const userPublicSelect = {
   email: true,
   role: true,
   isActive: true,
+  experienceLevel: true,
+  onboardedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -31,6 +33,12 @@ export function createUser(data: {
 export function updateUser(
   id: string,
   data: { firstName?: string; lastName?: string },
+) {
+  return prisma.user.update({ where: { id }, data, select: userPublicSelect });
+}
+export function setOnboarding(
+  id: string,
+  data: { experienceLevel: string | null; onboardedAt: Date },
 ) {
   return prisma.user.update({ where: { id }, data, select: userPublicSelect });
 }

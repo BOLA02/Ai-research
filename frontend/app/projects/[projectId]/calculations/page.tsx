@@ -1,1 +1,4 @@
-import { CalculationManager } from "@/components/calculation-card"; export default function Page(){return <div className="document-area"><h1>Calculations</h1><CalculationManager/></div>}
+"use client";
+import { Suspense } from "react";
+import { CalculationsPage } from "@/components/workspace/calculations-page";
+export default function Page() { return <Suspense><CalculationsPage /></Suspense>; }

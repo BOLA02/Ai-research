@@ -1,2 +1,17 @@
-"use client";import {useParams}from"next/navigation";import {ProjectWorkspace} from "@/components/project-workspace";import {ProtectedRoute} from "@/components/protected-route";import{ProjectContentProvider}from"@/lib/project-content";
-export default function ProjectLayout({children}:{children:React.ReactNode}){const{projectId}=useParams<{projectId:string}>();return <ProtectedRoute><ProjectContentProvider projectId={projectId}><ProjectWorkspace>{children}</ProjectWorkspace></ProjectContentProvider></ProtectedRoute>}
+"use client";
+
+import { useParams } from "next/navigation";
+import { ProtectedRoute } from "@/components/protected-route";
+import { WorkspaceProvider } from "@/lib/workspace/provider";
+import { WorkspaceShell } from "@/components/workspace/shell";
+
+export default function ProjectLayout({ children }: { children: React.ReactNode }) {
+  const { projectId } = useParams<{ projectId: string }>();
+  return (
+    <ProtectedRoute>
+      <WorkspaceProvider projectId={projectId}>
+        <WorkspaceShell>{children}</WorkspaceShell>
+      </WorkspaceProvider>
+    </ProtectedRoute>
+  );
+}
