@@ -1,19 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Lightbulb, ListChecks } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, GraduationCap, Lightbulb, ListChecks } from "lucide-react";
 import type { Guidance } from "@/lib/workspace/types";
 
 type Props = {
   guidance: Guidance;
   optional?: boolean;
   custom?: boolean;
+  /** Link to the matching part of the worked example, when there is one. */
+  exampleHref?: string;
   /** Called with a prompt the student chose to answer. */
   onUsePrompt?: (prompt: string) => void;
 };
 
 /** "What examiners expect": purpose, question prompts and tips from the department guidelines. */
-export function GuidancePanel({ guidance, optional, custom, onUsePrompt }: Props) {
+export function GuidancePanel({ guidance, optional, custom, exampleHref, onUsePrompt }: Props) {
   const [open, setOpen] = useState(true);
   const hasPurpose = guidance.purpose.length > 0;
 
@@ -43,6 +46,11 @@ export function GuidancePanel({ guidance, optional, custom, onUsePrompt }: Props
                 ))}
               </ul>
             </section>
+          )}
+          {exampleHref && (
+            <Link className="pf-btn pf-btn-sm" href={exampleHref} target="_blank" style={{ justifySelf: "start" }}>
+              <BookOpen size={14} aria-hidden /> See this in the worked example
+            </Link>
           )}
           {guidance.tips && guidance.tips.length > 0 && (
             <section className="pf-card pf-guide-card">

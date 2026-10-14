@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, PenLine } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -21,6 +22,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const name = user ? `${user.firstName} ${user.lastName}` : "";
   const initials = user ? `${user.firstName[0] ?? ""}${user.lastName[0] ?? ""}`.toUpperCase() : "";
+
+  // New students answer the readiness questions once, before they see the dashboard.
+  useEffect(() => {
+    if (user && !user.onboardedAt && path.startsWith("/dashboard")) router.replace("/welcome");
+  }, [user, path, router]);
 
   const signOut = async () => {
     await logout();

@@ -9,3 +9,7 @@ export const profileUpdateSchema = z
     (value) => Object.keys(value).length > 0,
     "At least one field is required",
   );
+const answer = z.union([z.literal(0), z.literal(1), z.literal(2)]);
+export const onboardingSchema = z
+  .object({ answers: z.tuple([answer, answer, answer]).optional() })
+  .strict();

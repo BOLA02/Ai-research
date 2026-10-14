@@ -198,3 +198,32 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 /* Tailwind's reset strips heading weight and list markers inside the workspace. */
 .pf-app h1, .pf-app h2, .pf-app h3 { font-weight: 700; }
 .pf-type ul, .pf-tips { list-style: disc; }
+
+/* Worked example */
+.pf-doc { font-family: var(--pf-serif); font-size: 16.5px; line-height: 1.7; color: #111; }
+.pf-block { position: relative; margin: 0 0 14px; padding: 4px 8px 4px 34px; border-radius: 6px; transition: background 0.2s; }
+.pf-block p { margin: 0; }
+.pf-block ul, .pf-block ol { margin: 0; padding-left: 22px; }
+.pf-block ul { list-style: disc; }
+.pf-block ol { list-style: decimal; }
+.pf-block li { margin: 2px 0; }
+.pf-hl { background: var(--pf-accent-soft); box-shadow: inset 3px 0 0 var(--pf-accent); }
+.pf-badge { position: absolute; left: 4px; top: 7px; display: grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--pf-brand); color: #fff; font: 700 12px var(--pf-sans); cursor: pointer; }
+.pf-badge.static { position: static; flex: none; cursor: inherit; }
+.pf-eq { padding: 8px 12px; border-left: 3px solid var(--pf-line-strong); background: #faf8f2; font-style: italic; }
+.pf-caption { margin: 0 0 6px; text-align: center; font-weight: 700; font-size: 14.5px; }
+.pf-table-wrap { overflow-x: auto; }
+.pf-table { width: 100%; margin: 0 auto; border-collapse: collapse; font-size: 14.5px; }
+.pf-table th, .pf-table td { padding: 6px 10px; border: 1px solid #222; text-align: left; vertical-align: top; }
+.pf-table th { background: #f1eee5; }
+.pf-table-note { margin: 6px 0 0; font: italic 13px var(--pf-sans); color: var(--pf-muted); }
+.pf-flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; padding: 14px 8px; }
+.pf-flow-node { padding: 8px 10px; border: 1.5px solid #222; border-radius: 4px; background: #fff; font: 600 13px var(--pf-sans); text-align: center; }
+.pf-flow-arrow { font-size: 18px; color: var(--pf-muted); }
+.pf-cover { padding: 10px 0; text-align: center; font-weight: 700; line-height: 1.8; }
+.pf-cover p { margin: 0; }
+.pf-why { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 10px 12px; border: 1px solid var(--pf-line); border-radius: 8px; background: #fff; font: inherit; font-size: 14px; line-height: 1.45; text-align: left; color: var(--pf-ink-soft); cursor: pointer; }
+.pf-why:disabled { cursor: default; background: transparent; border-style: dashed; }
+.pf-why:not(:disabled):hover { border-color: var(--pf-brand); }
+.pf-why.on { border-color: var(--pf-accent); background: var(--pf-accent-soft); color: #4d3410; }
+@media (prefers-reduced-motion: reduce) { .pf-block { transition: none; } }

@@ -17,12 +17,13 @@ type Props = {
   guidance: Guidance;
   optional?: boolean;
   custom?: boolean;
+  exampleHref?: string;
   placeholder: string;
   neighbours: { prev?: WritingItem; next?: WritingItem };
   banner?: React.ReactNode;
 };
 
-export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, placeholder, neighbours, banner }: Props) {
+export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner }: Props) {
   const { setContent, saveState } = useWorkspace();
   const area = useRef<HTMLTextAreaElement>(null);
 
@@ -88,7 +89,7 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
         </div>
       </div>
 
-      <GuidancePanel guidance={guidance} optional={optional} custom={custom} onUsePrompt={usePrompt} />
+      <GuidancePanel guidance={guidance} optional={optional} custom={custom} exampleHref={exampleHref} onUsePrompt={usePrompt} />
     </div>
   );
 }

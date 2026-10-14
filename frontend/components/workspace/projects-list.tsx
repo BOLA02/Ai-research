@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FolderPlus, ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, FolderPlus } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { ApiProject } from "@/lib/workspace/types";
@@ -40,6 +40,17 @@ export function ProjectsList() {
       </div>
 
       {error && <div className="pf-alert" role="alert">{error}</div>}
+
+      {(user?.experienceLevel === "beginner" || projects?.length === 0) && (
+        <Link href="/example" className="pf-card pf-project-card" style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20, background: "var(--pf-accent-soft)", borderColor: "#e8cf9c" }}>
+          <BookOpen size={26} aria-hidden color="#7a4f10" style={{ flex: "none" }} />
+          <span style={{ flex: 1 }}>
+            <strong style={{ display: "block" }}>New to project reports? See a finished one first.</strong>
+            <span style={{ fontSize: 14, color: "#4d3410" }}>A 15-minute walkthrough of a complete example, with notes on why each part works.</span>
+          </span>
+          <ArrowRight size={18} aria-hidden />
+        </Link>
+      )}
 
       {projects && projects.length === 0 && (
         <div className="pf-empty">

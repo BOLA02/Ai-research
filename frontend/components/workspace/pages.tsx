@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ArrowRight, Info, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { exampleFor } from "@/lib/example/water-level";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, chapterTemplate, documentGuidance, flattenTree, isStarted, sectionGuidance, wordCount, writingItems, type SectionNode } from "@/lib/workspace/outline";
 import { Editor } from "./editor";
@@ -14,6 +15,8 @@ function useItems() {
   const { project, documents, chapters, template } = useWorkspace();
   return useMemo(() => (project ? writingItems(project.id, documents, chapters, template) : []), [project, documents, chapters, template]);
 }
+
+const exampleHref = (part?: { id: string }) => (part ? `/example/${part.id}` : undefined);
 
 function NotFound({ what }: { what: string }) {
   const { project } = useWorkspace();
@@ -119,7 +122,7 @@ export function DocumentPage() {
             </div>
           )}
         </div>
-        <GuidancePanel guidance={{ ...guidance, prompts: [] }} />
+        <GuidancePanel guidance={{ ...guidance, prompts: [] }} exampleHref={exampleHref(exampleFor({ documentType: doc.type }))} />
       </div>
     );
   }
@@ -141,6 +144,7 @@ export function DocumentPage() {
         content={doc.content}
         guidance={guidance}
         optional={info?.optional}
+        exampleHref={exampleHref(exampleFor({ documentType: doc.type }))}
         placeholder={doc.type === "ABSTRACT" ? "Write this last. Cover what you did, how, what you found and what it means." : "Start writing…"}
         neighbours={{ prev: items[index - 1], next: items[index + 1] }}
         banner={banner}
@@ -183,6 +187,7 @@ export function SectionPage() {
       guidance={guidance}
       optional={optional}
       custom={custom}
+      exampleHref={exampleHref(exampleFor({ templateKey: section.templateKey }))}
       placeholder="Start writing. Use the questions on the right if you're not sure where to begin."
       neighbours={{ prev: items[index - 1], next: items[index + 1] }}
     />
