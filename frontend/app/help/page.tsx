@@ -34,7 +34,7 @@ export default function HelpPage() {
     <div className="hp">
       <header className="hp-top">
         <Link href="/" className="hp-brand"><span><PenLine size={16} aria-hidden /></span> ProjectForge</Link>
-        <Link href="/dashboard" className="hp-open">Open the app <ArrowRight size={15} aria-hidden /></Link>
+        <Link href="/dashboard" className="hp-open" prefetch={false}>Open the app <ArrowRight size={15} aria-hidden /></Link>
       </header>
 
       <div className="hp-layout">
@@ -159,7 +159,7 @@ export default function HelpPage() {
 
           <div className="hp-cta">
             <h2>Ready to start?</h2>
-            <Link href="/dashboard" className="hp-open">Open the app <ArrowRight size={15} aria-hidden /></Link>
+            <Link href="/dashboard" className="hp-open" prefetch={false}>Open the app <ArrowRight size={15} aria-hidden /></Link>
           </div>
         </main>
       </div>

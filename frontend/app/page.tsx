@@ -26,7 +26,7 @@ export default function Landing() {
           <a href="#features">Features</a>
           <Link href="/help">Help</Link>
         </nav>
-        <Link className="lp-btn lp-btn-primary" href="/dashboard">Open the app <ArrowRight size={15} aria-hidden /></Link>
+        <Link className="lp-btn lp-btn-primary" href="/dashboard" prefetch={false}>Open the app <ArrowRight size={15} aria-hidden /></Link>
       </header>
 
       <main>
