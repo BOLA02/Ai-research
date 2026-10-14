@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AlertCircle, BookMarked, Calculator, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Loader2, Plus, Table2 } from "lucide-react";
+import { AlertCircle, Bold, BookMarked, Calculator, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Italic, Loader2, Plus, Redo2, Table2, Underline, Undo2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useReportIndex } from "@/lib/workspace/hooks";
 import { useWorkspace, type ContentTarget } from "@/lib/workspace/provider";
 import { wordCount, type WritingItem } from "@/lib/workspace/outline";
 import type { Guidance } from "@/lib/workspace/types";
 import { CoachPanel } from "./coach-panel";
+import { Formatted } from "./formatted";
 import { GuidancePanel } from "./guidance";
 
 type Props = {
@@ -34,11 +35,89 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
   const { index } = useReportIndex();
   const area = useRef<HTMLTextAreaElement>(null);
   const caret = useRef<number | null>(null);
+  const range = useRef<[number, number] | null>(null);
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [preview, setPreview] = useState("");
   const [previewing, setPreviewing] = useState(false);
   const [menu, setMenu] = useState(false);
   const base = `/projects/${project?.id}`;
+
+  // Undo and redo. Typing is grouped into steps, so one press undoes a burst of typing, not a letter.
+  const past = useRef<string[]>([]);
+  const future = useRef<string[]>([]);
+  const lastEdit = useRef(0);
+  const [steps, setSteps] = useState({ undo: 0, redo: 0 });
+  const track = () => setSteps({ undo: past.current.length, redo: future.current.length });
+  useEffect(() => {
+    past.current = [];
+    future.current = [];
+    track();
+  }, [target.id]);
+
+  /** Every change the writer makes goes through here. */
+  const commit = (next: string, options: { newStep?: boolean } = {}) => {
+    if (next === content) return;
+    const now = Date.now();
+    if (options.newStep || now - lastEdit.current > 800 || past.current.length === 0) {
+      past.current.push(content);
+      if (past.current.length > 200) past.current.shift();
+    }
+    lastEdit.current = now;
+    future.current = [];
+    track();
+    setContent(target, next);
+  };
+
+  const jump = (from: string[], to: string[]) => {
+    const previous = from.pop();
+    if (previous === undefined) return;
+    to.push(content);
+    lastEdit.current = 0;
+    // Put the cursor where the text changed.
+    let at = 0;
+    while (at < content.length && at < previous.length && content[at] === previous[at]) at += 1;
+    caret.current = Math.max(0, at + Math.max(0, previous.length - content.length));
+    setContent(target, previous);
+    track();
+  };
+  const undo = () => jump(past.current, future.current);
+  const redo = () => jump(future.current, past.current);
+
+  /** Wrap the selected text in a mark, or take the mark off if it is already there. */
+  const emphasise = (mark: string) => {
+    const element = area.current;
+    if (!element) return;
+    const start = element.selectionStart;
+    const end = element.selectionEnd;
+    const chosen = content.slice(start, end);
+    const wrapped = chosen.length >= mark.length * 2 && chosen.startsWith(mark) && chosen.endsWith(mark);
+    const outside = content.slice(start - mark.length, start) === mark && content.slice(end, end + mark.length) === mark;
+    if (wrapped) {
+      const inner = chosen.slice(mark.length, -mark.length);
+      range.current = [start, start + inner.length];
+      commit(`${content.slice(0, start)}${inner}${content.slice(end)}`, { newStep: true });
+    } else if (outside && chosen) {
+      range.current = [start - mark.length, end - mark.length];
+      commit(`${content.slice(0, start - mark.length)}${chosen}${content.slice(end + mark.length)}`, { newStep: true });
+    } else if (chosen) {
+      range.current = [start + mark.length, end + mark.length];
+      commit(`${content.slice(0, start)}${mark}${chosen}${mark}${content.slice(end)}`, { newStep: true });
+    } else {
+      // Nothing selected: leave the cursor between the marks, ready to type.
+      caret.current = start + mark.length;
+      commit(`${content.slice(0, start)}${mark}${mark}${content.slice(end)}`, { newStep: true });
+    }
+  };
+
+  const onKey = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!(event.ctrlKey || event.metaKey)) return;
+    const key = event.key.toLowerCase();
+    if (key === "z" && !event.shiftKey) { event.preventDefault(); undo(); }
+    else if (key === "y" || (key === "z" && event.shiftKey)) { event.preventDefault(); redo(); }
+    else if (key === "b") { event.preventDefault(); emphasise("**"); }
+    else if (key === "i") { event.preventDefault(); emphasise("*"); }
+    else if (key === "u") { event.preventDefault(); emphasise("++"); }
+  };
 
   // Grow the textarea with its content so the page scrolls instead of the box.
   useEffect(() => {
@@ -50,7 +129,12 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
 
   // After inserting a marker, put the cursor just after it.
   useLayoutEffect(() => {
-    if (caret.current !== null && area.current) {
+    if (range.current && area.current) {
+      area.current.focus();
+      area.current.setSelectionRange(range.current[0], range.current[1]);
+      range.current = null;
+      caret.current = null;
+    } else if (caret.current !== null && area.current) {
       area.current.focus();
       area.current.setSelectionRange(caret.current, caret.current);
       caret.current = null;
@@ -79,7 +163,7 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
     const tail = !options.ownLine || after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
     const text = `${lead}${marker}${tail}`;
     caret.current = start + text.length;
-    setContent(target, `${before}${text}${after}`);
+    commit(`${before}${text}${after}`, { newStep: true });
     setMenu(false);
   };
 
@@ -99,7 +183,7 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
 
   const usePrompt = (prompt: string) => {
     const gap = content && !content.endsWith("\n") ? "\n\n" : content ? "\n" : "";
-    setContent(target, `${content}${gap}${prompt}\n`);
+    commit(`${content}${gap}${prompt}\n`, { newStep: true });
     area.current?.focus();
   };
 
@@ -128,6 +212,16 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
             <button role="tab" aria-selected={mode === "write"} className={mode === "write" ? "on" : ""} onClick={() => setMode("write")}>Write</button>
             <button role="tab" aria-selected={mode === "preview"} className={mode === "preview" ? "on" : ""} onClick={showPreview}>Preview</button>
           </div>
+          {mode === "write" && (
+            <div className="pf-tools" role="toolbar" aria-label="Formatting">
+              <button type="button" className="pf-icon-btn" onClick={undo} disabled={steps.undo === 0} aria-label="Undo" title="Undo (Ctrl+Z)"><Undo2 size={17} aria-hidden /></button>
+              <button type="button" className="pf-icon-btn" onClick={redo} disabled={steps.redo === 0} aria-label="Redo" title="Redo (Ctrl+Y)"><Redo2 size={17} aria-hidden /></button>
+              <span className="pf-tools-sep" aria-hidden />
+              <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => emphasise("**")} aria-label="Bold" title="Bold (Ctrl+B)"><Bold size={17} aria-hidden /></button>
+              <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => emphasise("*")} aria-label="Italic" title="Italic (Ctrl+I)"><Italic size={17} aria-hidden /></button>
+              <button type="button" className="pf-icon-btn" onMouseDown={(event) => event.preventDefault()} onClick={() => emphasise("++")} aria-label="Underline" title="Underline (Ctrl+U)"><Underline size={17} aria-hidden /></button>
+            </div>
+          )}
           {mode === "write" && (
             <div ref={toolbar} style={{ position: "relative" }}>
               <button className="pf-btn pf-btn-sm" aria-haspopup="menu" aria-expanded={menu} onClick={() => { caret.current = null; setMenu(!menu); }}><Plus size={14} aria-hidden /> Insert</button>
@@ -161,13 +255,14 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
                 className="pf-textarea"
                 value={content}
                 placeholder={placeholder}
-                onChange={(event) => setContent(target, event.target.value)}
+                onChange={(event) => commit(event.target.value)}
+                onKeyDown={onKey}
                 spellCheck
               />
             </>
           ) : (
             <div className="pf-preview" aria-live="polite">
-              {previewing ? <span className="pf-muted">Formatting your citations…</span> : preview || <span className="pf-muted">Nothing written yet.</span>}
+              {previewing ? <span className="pf-muted">Formatting your citations…</span> : preview ? <Formatted text={preview} /> : <span className="pf-muted">Nothing written yet.</span>}
             </div>
           )}
         </div>

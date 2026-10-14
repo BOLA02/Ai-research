@@ -42,6 +42,25 @@ export function italicPieces(text: string): { text: string; italics: boolean }[]
     .map((part) => (part.startsWith("*") && part.endsWith("*") && part.length > 2 ? { text: part.slice(1, -1), italics: true } : { text: part, italics: false }));
 }
 
+export type StyledPiece = { text: string; bold: boolean; italics: boolean; underline: boolean };
+
+/**
+ * Splits student text into pieces by emphasis: **bold**, *italic* and ++underline++.
+ * Marks that are not closed on the same line stay as plain text.
+ */
+export function styledPieces(text: string): StyledPiece[] {
+  return text
+    .split(/(\*\*\*[^*\n]+\*\*\*|\*\*[^*\n]+\*\*|\+\+[^+\n]+\+\+|\*[^*\n]+\*)/g)
+    .filter(Boolean)
+    .map((part) => {
+      if (part.length > 6 && part.startsWith("***") && part.endsWith("***")) return { text: part.slice(3, -3), bold: true, italics: true, underline: false };
+      if (part.length > 4 && part.startsWith("**") && part.endsWith("**")) return { text: part.slice(2, -2), bold: true, italics: false, underline: false };
+      if (part.length > 4 && part.startsWith("++") && part.endsWith("++")) return { text: part.slice(2, -2), bold: false, italics: false, underline: true };
+      if (part.length > 2 && part.startsWith("*") && part.endsWith("*")) return { text: part.slice(1, -1), bold: false, italics: true, underline: false };
+      return { text: part, bold: false, italics: false, underline: false };
+    });
+}
+
 export const AWARDS: Record<string, string> = {
   HND: "HIGHER NATIONAL DIPLOMA",
   ND: "NATIONAL DIPLOMA",

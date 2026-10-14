@@ -2,7 +2,7 @@ import {
   AlignmentType, Bookmark, BorderStyle, Document, Header, HeadingLevel, ImageRun, LeaderType, LineRuleType, NumberFormat, Packer,
   PageNumber, PageReference, Paragraph, Table, TableCell, TableRow, TabStopType, TextRun, WidthType,
 } from "docx";
-import { chapterWord, fillBlanks, fit, italicPieces, toParagraphs, toRoman } from "./export.util";
+import { chapterWord, fillBlanks, fit, italicPieces, styledPieces, toParagraphs, toRoman } from "./export.util";
 import type { CalcBlock, ExportModel, FigureBlock, FrontPage, SectionBlock, TableBlock } from "./export.model";
 
 const FONT = "Times New Roman";
@@ -26,7 +26,7 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
 
   /** Lines of one paragraph, joined with line breaks. */
   const lineRuns = (lines: string[], options: { size?: number; italics?: boolean } = {}) =>
-    lines.flatMap((line, index) => italicPieces(line).map((piece, i) => new TextRun({ text: piece.text, font: FONT, size: options.size ?? size, italics: piece.italics || options.italics, break: index > 0 && i === 0 ? 1 : 0 })));
+    lines.flatMap((line, index) => styledPieces(line).map((piece, i) => new TextRun({ text: piece.text, font: FONT, size: options.size ?? size, bold: piece.bold || undefined, italics: piece.italics || options.italics, underline: piece.underline ? {} : undefined, break: index > 0 && i === 0 ? 1 : 0 })));
 
   const textParagraphs = (text: string, spacing = body) =>
     toParagraphs(text).map(

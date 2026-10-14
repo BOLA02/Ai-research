@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import { FORMAT } from "../../templates/eee-hnd";
 import { buildDocx } from "./docx-builder";
 import type { ExportModel } from "./export.model";
-import { awardFor, chapterWord, departmentLine, fillBlanks, fit, imageSize, italicPieces, toParagraphs, toRoman } from "./export.util";
+import { awardFor, chapterWord, departmentLine, fillBlanks, fit, imageSize, italicPieces, styledPieces, toParagraphs, toRoman } from "./export.util";
 
 const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
 
@@ -112,4 +112,15 @@ test("helpers", () => {
   assert.equal(imageSize(Buffer.from("not an image at all, really not")), null);
   assert.deepEqual(fit(2000, 1000, 500, 500), { width: 500, height: 250 });
   assert.deepEqual(fit(100, 50, 500, 500), { width: 100, height: 50 });
+});
+
+test("styledPieces reads bold, italic and underline marks", () => {
+  const plain = { bold: false, italics: false, underline: false };
+  assert.deepEqual(styledPieces("a **b** *c* ++d++ e"), [
+    { text: "a ", ...plain }, { text: "b", ...plain, bold: true }, { text: " ", ...plain }, { text: "c", ...plain, italics: true },
+    { text: " ", ...plain }, { text: "d", ...plain, underline: true }, { text: " e", ...plain },
+  ]);
+  assert.deepEqual(styledPieces("***both***"), [{ text: "both", bold: true, italics: true, underline: false }]);
+  // Unclosed marks and marks across lines stay as typed.
+  assert.deepEqual(styledPieces("only **open here"), [{ text: "only **open here", ...plain }]);
 });
