@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Calculator, CheckSquare, Download, IdCard, Image as ImageIcon, Menu, Plus, Table2, X } from "lucide-react";
+import { ArrowLeft, BookOpen, BookOpenText, Calculator, CheckSquare, Download, IdCard, Image as ImageIcon, Menu, Plus, Table2, X } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, isStarted, writingItems, type SectionNode } from "@/lib/workspace/outline";
 
@@ -13,6 +13,7 @@ const tools = [
   { label: "Figures", slug: "figures", tip: "Diagrams and photos, numbered for you", icon: ImageIcon },
   { label: "Tables", slug: "tables", tip: "Results and specifications, numbered for you", icon: Table2 },
   { label: "Calculations", slug: "calculations", tip: "Work out values step by step and show the working", icon: Calculator },
+  { label: "Book view", slug: "book", tip: "Open your report page by page, as it will print", icon: BookOpenText },
   { label: "Checks", slug: "validation", tip: "See what your department's guidelines still need", icon: CheckSquare },
   { label: "Export", slug: "export", tip: "Download your report as a Word document", icon: Download },
 ];

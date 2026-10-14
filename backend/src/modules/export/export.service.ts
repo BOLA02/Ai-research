@@ -136,3 +136,10 @@ export async function exportDocx(userId: string, projectId: string) {
   const model = await buildExportModel(userId, projectId);
   return { buffer: await buildDocx(model), title: model.title };
 }
+
+/** The report as the book preview shows it. Pictures are left out; the page asks for each one by its id. */
+export async function previewModel(userId: string, projectId: string) {
+  const model = await buildExportModel(userId, projectId);
+  const strip = <T extends { image: { data: Buffer; width: number; height: number } | null }>(figure: T) => ({ ...figure, image: figure.image ? { width: figure.image.width, height: figure.image.height } : null });
+  return { ...model, chapters: model.chapters.map((chapter) => ({ ...chapter, sections: chapter.sections.map((section) => ({ ...section, figures: section.figures.map(strip) })) })) };
+}

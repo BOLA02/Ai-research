@@ -357,3 +357,45 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 
 /* Tooltips */
 .pf-tip { position: fixed; z-index: 1100; max-width: 240px; padding: 6px 10px; border-radius: 8px; background: var(--pf-ink); color: #fff; font: 500 12.5px/1.35 var(--pf-sans); pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+
+/* ------------------------------------------------------------ Book view */
+.bk-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.bk-bar .bk-count { margin-left: auto; font-size: 13px; }
+.bk-stage { background: #d9d5c9; border-radius: 12px; padding: 14px 4px; overflow: hidden; display: flex; justify-content: center; min-height: 300px; touch-action: pan-y; }
+.bk-spread { display: flex; gap: 6px; flex: none; }
+.bk-sheet { position: relative; flex: none; background: #fff; box-shadow: 0 2px 14px rgba(0, 0, 0, 0.22); color: #000; }
+.bk-sheet.empty { background: transparent; box-shadow: none; }
+.bk-clip { position: absolute; overflow: hidden; }
+.bk-flow { line-height: var(--bk-line, 1.5); text-align: left; hyphens: none; }
+.bk-flow * { box-sizing: border-box; }
+.bk-measure { position: absolute; left: -99999px; top: 0; visibility: hidden; pointer-events: none; }
+.bk-num { position: absolute; font-family: "Times New Roman", Times, serif; font-size: 12pt; }
+.bk-num.bottom { left: 0; right: 0; bottom: 30px; text-align: center; }
+.bk-num.top { right: 76px; top: 34px; }
+.bk-p { margin: 0 0 12pt; }
+.bk-abstract { line-height: var(--bk-abs-line, 1); }
+.bk-item { display: flex; gap: 10px; padding-left: 36px; text-indent: -36px; margin-bottom: 6pt; }
+.bk-item > .bk-marker { flex: none; width: 26px; text-indent: 0; }
+.bk-item > span:last-child { flex: 1; }
+.bk-newpage { break-before: column; }
+.bk-front-h, .bk-ch-h { text-align: center; font-size: 1em; font-weight: 700; margin: 0 0 12pt; line-height: 1.2; }
+.bk-ch-h { break-before: column; margin-bottom: 18pt; }
+.bk-sec-h { font-size: 1em; font-weight: 700; margin: 12pt 0 6pt; break-after: avoid; }
+.bk-identity { text-align: center; font-weight: 700; line-height: 1.3; }
+.bk-identity p { margin: 0 0 8pt; }
+.bk-toc { display: flex; gap: 6px; align-items: baseline; margin-bottom: 4pt; line-height: 1.25; break-inside: avoid; }
+.bk-toc i { flex: 1; border-bottom: 1px dotted #000; transform: translateY(-3px); min-width: 12px; }
+.bk-sig { display: flex; justify-content: space-between; margin-bottom: 2pt; }
+.bk-calc { margin: 6pt 0 12pt 24px; line-height: 1.15; break-inside: avoid; }
+.bk-figure, .bk-table-wrap { text-align: center; margin: 8pt 0 12pt; }
+.bk-figure img { max-width: 100%; height: auto; display: inline-block; break-inside: avoid; }
+.bk-caption { font-weight: 700; text-align: center; margin: 6pt 0; break-before: avoid; }
+.bk-table-wrap .bk-caption { break-after: avoid; }
+.bk-source { font-style: italic; font-size: 10pt; text-align: center; margin: 0 0 8pt; }
+.bk-table { border-collapse: collapse; width: 100%; font-size: 11pt; line-height: 1.2; }
+.bk-table th, .bk-table td { border: 1px solid #000; padding: 3px 6px; text-align: left; vertical-align: top; }
+.bk-table th { background: #ededed; }
+.bk-table tr { break-inside: avoid; }
+.bk-ref { display: flex; gap: 8px; padding-left: 30px; text-indent: -30px; margin: 0 0 6pt; line-height: 1.2; break-inside: avoid; }
+.bk-ref > .bk-marker { flex: none; width: 30px; text-indent: 0; }
+.bk-ref > span:last-child { flex: 1; text-indent: 0; }
