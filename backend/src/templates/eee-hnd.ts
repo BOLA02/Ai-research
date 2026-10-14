@@ -537,8 +537,9 @@ const designChapters: ChapterTemplate[] = [
 ];
 
 /**
- * Maintenance chapters 1 to 3 come from the department slides. Chapters 4 and 5 are
- * a placeholder until the department confirms them, so this template is provisional.
+ * Maintenance chapters 1 to 3 come from the department slides. The slides give no
+ * maintenance version of chapters 4 to 6, so the student names those chapters and
+ * adds their sections.
  */
 const maintenanceChapters: ChapterTemplate[] = [
   introduction(),
@@ -634,13 +635,15 @@ const maintenanceChapters: ChapterTemplate[] = [
       ),
     ],
   },
-  {
-    key: "testing-results",
-    number: 4,
-    title: "Testing and Result",
-    sections: designChapters[4].sections,
-  },
-  { ...conclusions(), number: 5 },
+  ...[4, 5, 6].map(
+    (number): ChapterTemplate => ({
+      key: `chapter-${number}`,
+      number,
+      title: `Chapter ${["", "", "", "", "Four", "Five", "Six"][number]}`,
+      studentDefined: true,
+      sections: [],
+    }),
+  ),
 ];
 
 const requirements: Requirement[] = [
@@ -685,6 +688,5 @@ export const eeeHndMaintenance: ReportTemplate = {
   id: "eee-hnd-maintenance",
   name: "EEE HND: Maintenance and Repair",
   projectType: "MAINTENANCE",
-  provisional: true,
   chapters: maintenanceChapters,
 };

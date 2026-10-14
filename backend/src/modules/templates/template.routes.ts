@@ -9,8 +9,8 @@ templateRouter.get("/", (_req, res) =>
   res.json({
     success: true,
     data: {
-      templates: Object.values(templates).map(({ id, name, institution, department, programme, projectType, provisional }) => ({
-        id, name, institution, department, programme, projectType, provisional: !!provisional,
+      templates: Object.values(templates).map(({ id, name, institution, department, programme, projectType }) => ({
+        id, name, institution, department, programme, projectType,
       })),
     },
   }),

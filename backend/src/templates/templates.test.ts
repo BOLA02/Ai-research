@@ -23,12 +23,12 @@ test("EEE design template has the six chapters from the department slides", () =
   );
 });
 
-test("maintenance template differs from design in chapters 2 to 5", () => {
-  const design = templates["eee-hnd-design"].chapters;
+test("maintenance chapters 1 to 3 follow the slides and 4 to 6 are student-defined", () => {
   const maintenance = templates["eee-hnd-maintenance"].chapters;
+  assert.equal(maintenance.length, 6);
   assert.equal(maintenance[2].title, "Trouble Shooting and Remedy");
-  assert.notEqual(maintenance[3].title, design[3].title);
-  assert.equal(templates["eee-hnd-maintenance"].provisional, true);
+  assert.deepEqual(maintenance.map((chapter) => !!chapter.studentDefined), [false, false, false, true, true, true]);
+  assert.ok(maintenance.slice(3).every((chapter) => chapter.sections.length === 0));
 });
 
 test("chapter numbers are sequential and keys are unique per chapter", () => {

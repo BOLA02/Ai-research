@@ -19,6 +19,8 @@ export type ChapterTemplate = {
   key: string;
   number: number;
   title: string;
+  /** The department does not fix this chapter's title: the student names it and adds its sections. */
+  studentDefined?: boolean;
   sections: SectionTemplate[];
 };
 
@@ -72,8 +74,6 @@ export type ReportTemplate = {
   programme: string;
   projectType: "DESIGN" | "MAINTENANCE";
   referenceStyle: "IEEE";
-  /** True when the department has not yet confirmed this structure. */
-  provisional?: boolean;
   documents: DocumentTemplate[];
   chapters: ChapterTemplate[];
   requirements: Requirement[];
