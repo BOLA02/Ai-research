@@ -1,0 +1,8 @@
+ALTER TYPE "ProjectDocumentType" ADD VALUE 'APPROVAL_PAGE';
+ALTER TYPE "ProjectDocumentType" ADD VALUE 'FLY_LEAF';
+ALTER TYPE "ProjectDocumentType" ADD VALUE 'LIST_OF_SYMBOLS_ABBREVIATIONS';
+
+ALTER TABLE "Project" ADD COLUMN "templateId" VARCHAR(60);
+ALTER TABLE "ProjectDocument" ADD COLUMN "numbering" VARCHAR(10) NOT NULL DEFAULT 'roman';
+ALTER TABLE "Chapter" ADD COLUMN "templateKey" VARCHAR(60);
+ALTER TABLE "Section" ADD COLUMN "templateKey" VARCHAR(60);

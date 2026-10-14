@@ -22,6 +22,9 @@ enum ProjectDocumentType {
   COVER_PAGE
   TITLE_PAGE
   CERTIFICATION
+  APPROVAL_PAGE
+  FLY_LEAF
+  LIST_OF_SYMBOLS_ABBREVIATIONS
   DECLARATION
   DEDICATION
   ACKNOWLEDGEMENT
@@ -71,6 +74,7 @@ model Project {
   programme      String?           @db.VarChar(255)
   projectType    String?           @db.VarChar(100)
   referenceStyle String?           @db.VarChar(30)
+  templateId     String?           @db.VarChar(60)
   ownerId        String            @db.Uuid
   createdAt      DateTime          @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime          @updatedAt @db.Timestamptz(6)
@@ -90,6 +94,7 @@ model ProjectDocument {
   content   String              @default("")
   position  Int                 @default(0)
   isEnabled Boolean             @default(true)
+  numbering String              @default("roman") @db.VarChar(10)
   createdAt DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt DateTime            @updatedAt @db.Timestamptz(6)
   project   Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -102,6 +107,7 @@ model Chapter {
   projectId String    @db.Uuid
   number    Int
   title     String    @db.VarChar(500)
+  templateKey String?  @db.VarChar(60)
   position  Int
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @db.Timestamptz(6)
@@ -117,6 +123,7 @@ model Section {
   chapterId       String    @db.Uuid
   parentSectionId String?   @db.Uuid
   title           String    @db.VarChar(500)
+  templateKey     String?   @db.VarChar(60)
   content         String    @default("")
   position        Int
   createdAt       DateTime  @default(now()) @db.Timestamptz(6)

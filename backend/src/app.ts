@@ -9,6 +9,7 @@ import { userRouter } from "./modules/users";
 import { documentRouter } from "./modules/documents";
 import { chapterRouter } from "./modules/chapters";
 import { sectionRouter } from "./modules/sections";
+import { templateRouter } from "./modules/templates";
 import { errorHandler, notFound } from "./middleware/errors";
 export const app = express();
 app.disable("x-powered-by");
@@ -27,6 +28,7 @@ app.get("/api/health", (_req, res) =>
 );
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/templates", templateRouter);
 app.use("/api/projects", documentRouter);
 app.use("/api/projects", sectionRouter);
 app.use("/api/projects", chapterRouter);

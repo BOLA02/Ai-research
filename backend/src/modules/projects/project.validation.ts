@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TEMPLATE_IDS } from "../../templates";
 export const projectCreateSchema = z
   .object({
     title: z.string().trim().min(1).max(500),
@@ -7,9 +8,11 @@ export const projectCreateSchema = z
     programme: z.string().trim().max(255).optional().default(""),
     projectType: z.string().trim().max(100).optional().default(""),
     referenceStyle: z.string().trim().min(1).max(30).optional().default("IEEE"),
+    templateId: z.enum(TEMPLATE_IDS).optional(),
   })
   .strict();
 export const projectUpdateSchema = projectCreateSchema
+  .omit({ templateId: true })
   .partial()
   .refine(
     (value) => Object.keys(value).length > 0,
