@@ -43,8 +43,8 @@ export default function Landing() {
           </div>
           <Link href="/help#video" className="lp-preview" aria-label="Watch the walkthrough video">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/help/poster.jpg" alt="The ProjectForge workspace with a guide open beside the writing area" width={1280} height={720} />
-            <span className="lp-play" aria-hidden>Watch the 3 minute tour</span>
+            <img src="/help/poster.jpg" alt="The ProjectForge workspace with a guide open beside the writing area" width={1280} height={580} />
+            <span className="lp-play" aria-hidden>Watch the 3 minute tour (with sound)</span>
           </Link>
         </section>
 

@@ -62,7 +62,7 @@ export default function HelpPage() {
 
           <section id="video">
             <h2>Watch the video</h2>
-            <p>A short walkthrough of writing a report from sign-up to Word download.</p>
+            <p>A 3 minute narrated walkthrough, from sign-up to the Word download. Turn your sound on.</p>
             <video className="hp-video" controls preload="metadata" playsInline poster="/help/poster.jpg">
               <source src="/help/projectforge-walkthrough.mp4" type="video/mp4" />
               Your browser can&apos;t play this video. You can follow the written steps below instead.
