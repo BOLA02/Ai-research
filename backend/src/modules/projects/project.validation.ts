@@ -7,7 +7,7 @@ export const projectCreateSchema = z
     department: z.string().trim().max(255).optional().default(""),
     programme: z.string().trim().max(255).optional().default(""),
     projectType: z.string().trim().max(100).optional().default(""),
-    referenceStyle: z.string().trim().min(1).max(30).optional().default("IEEE"),
+    referenceStyle: z.enum(["IEEE", "APA"]).optional().default("IEEE"),
     templateId: z.enum(TEMPLATE_IDS).optional(),
   })
   .strict();
