@@ -223,6 +223,9 @@ model Figure {
   isOriginal Boolean  @default(true)
   altText    String?  @db.VarChar(500)
   imageData  Bytes?
+  // Set when the picture lives on Cloudinary instead of in the database.
+  imageUrl   String?  @db.VarChar(500)
+  imagePublicId String? @db.VarChar(200)
   mimeType   String?  @db.VarChar(60)
   position   Int      @default(0)
   createdAt  DateTime @default(now()) @db.Timestamptz(6)

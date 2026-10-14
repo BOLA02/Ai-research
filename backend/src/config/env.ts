@@ -13,6 +13,10 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   MAIL_FROM: z.string().min(3).default("ProjectForge <onboarding@resend.dev>"),
   PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
+  // Figure images are stored on Cloudinary when all three are set; otherwise they are kept in the database.
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
   SESSION_TTL_HOURS: z.coerce.number().positive().max(168).default(8),
   SESSION_COOKIE_NAME: z.string().min(1).default("pf_session"),
   // The writing coach is switched on by setting an API key. The SDK reads ANTHROPIC_BASE_URL itself.

@@ -340,3 +340,20 @@ a.pf-row:hover { border-color: var(--pf-brand); }
   .pf-guide-mini button { grid-column: 2; grid-row: 1; }
 }
 @media (max-width: 860px) { .pf-crumbs a { display: inline-flex; align-items: center; min-height: 44px; } }
+
+/* ------------------------------------------------------------ Formatting toolbar */
+.pf-tools { display: flex; align-items: center; gap: 2px; }
+.pf-tools .pf-icon-btn:disabled { opacity: 0.35; cursor: default; }
+.pf-tools-sep { width: 1px; height: 20px; margin: 0 6px; background: var(--pf-line-strong); }
+.pf-toolbar { flex-wrap: wrap; row-gap: 8px; }
+
+/* Alignment and lists */
+.pf-tools .pf-icon-btn.on { background: var(--pf-brand-soft); color: var(--pf-brand-strong); }
+.pf-unit { margin: 0 0 14px; }
+.pf-unit-item { display: flex; gap: 10px; margin-bottom: 6px; }
+.pf-unit-item .pf-marker { flex: none; min-width: 1.6em; }
+.pf-unit-item > span:last-child { flex: 1; min-width: 0; }
+.pf-tools { overflow-x: auto; max-width: 100%; }
+
+/* Tooltips */
+.pf-tip { position: fixed; z-index: 1100; max-width: 240px; padding: 6px 10px; border-radius: 8px; background: var(--pf-ink); color: #fff; font: 500 12.5px/1.35 var(--pf-sans); pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }

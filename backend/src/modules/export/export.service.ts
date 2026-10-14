@@ -5,6 +5,7 @@ import { loadReportContext } from "../report/report.context";
 import { buildIndex } from "../report/report.service";
 import { buildDocx } from "./docx-builder";
 import type { BodyPart, CalcBlock, ExportModel, FigureBlock, SectionBlock, TableBlock } from "./export.model";
+import { figureBytes } from "../figures/figure.service";
 import { awardFor, departmentLine, imageSize } from "./export.util";
 
 const SPECIAL = new Set(["COVER_PAGE", "FLY_LEAF", "TITLE_PAGE", "APPENDIX", "CUSTOM"]);
@@ -23,8 +24,18 @@ export async function buildExportModel(userId: string, projectId: string): Promi
   const figureNumber = new Map(index.figures.map((item) => [item.id, item.number]));
   const tableNumber = new Map(index.tables.map((item) => [item.id, item.number]));
 
-  const figures: (FigureBlock & { sectionId: string | null })[] = figureRows.map((row) => {
-    const bytes = row.imageData ? Buffer.from(row.imageData) : null;
+  const pictures = await Promise.all(
+    figureRows.map(async (row) => {
+      try {
+        return await figureBytes(row);
+      } catch (error) {
+        console.error("Could not load a figure for the export", error instanceof Error ? error.message : error);
+        return null;
+      }
+    }),
+  );
+  const figures: (FigureBlock & { sectionId: string | null })[] = figureRows.map((row, at) => {
+    const bytes = pictures[at];
     const size = bytes ? imageSize(bytes) : null;
     return {
       id: row.id,

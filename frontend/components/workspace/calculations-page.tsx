@@ -7,6 +7,7 @@ import { useWorkspace } from "@/lib/workspace/provider";
 import { useSectionOptions } from "@/lib/workspace/hooks";
 import { CALC_PRESETS, type CalcPreset } from "@/lib/workspace/calc-presets";
 import type { ApiCalculation, CalcResult, CalcStep, CalcVariable } from "@/lib/workspace/types";
+import { ToolGuide } from "./tool-guide";
 
 /** Shows subscripts the way the report will: V_pk becomes V with a lowered pk. */
 export function Working({ line }: { line: string }) {
@@ -200,9 +201,10 @@ export function CalculationsPage() {
     <div className="pf-section" style={{ maxWidth: 940 }}>
       <div className="pf-eyebrow">Tools</div>
       <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>Calculations</h1>
-      <p className="pf-lede" style={{ marginBottom: 20 }}>Enter what you know and the formulas. ProjectForge does the arithmetic and writes each step the way examiners expect: the formula, then your numbers, then the answer with its unit. Because it works the numbers out, you can't copy a wrong answer into your report.</p>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}><ToolGuide id="calculations" label="Calculations" steps={[{ target: "intro", placement: "bottom", title: "Calculations", body: <p>Enter what you know and the formulas. ProjectForge does the arithmetic and writes each step the way examiners expect, so a wrong answer can&apos;t slip into your report.</p> }, { target: "add", placement: "bottom", title: "Start from an example", body: <p>Pick a ready-made example such as Ohm&apos;s law or a rectifier, or start blank. Give it a title and a section, then press Add.</p> }, { target: "items", placement: "bottom", title: "Values, then steps", body: <p>List your values (4.7k and 100m work), then write each step as a formula. Copy the marker and paste it on its own line where the working should appear.</p> }]} /></div>
+      <p data-tour="intro" className="pf-lede" style={{ marginBottom: 20 }}>Enter what you know and the formulas. ProjectForge does the arithmetic and writes each step the way examiners expect: the formula, then your numbers, then the answer with its unit. Because it works the numbers out, you can't copy a wrong answer into your report.</p>
 
-      <form onSubmit={add} className="pf-card" style={{ padding: 16, marginBottom: 20, display: "grid", gap: 14 }}>
+      <form data-tour="add" onSubmit={add} className="pf-card" style={{ padding: 16, marginBottom: 20, display: "grid", gap: 14 }}>
         <div>
           <div className="pf-label">Start from</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -226,7 +228,7 @@ export function CalculationsPage() {
       {calculations.length === 0 ? (
         <div className="pf-empty"><h3>No calculations yet</h3><p className="pf-muted">Design calculations, such as a power supply or a resistor value, go here.</p></div>
       ) : (
-        <ul className="pf-list" style={{ gap: 16 }}>{calculations.map((calculation) => <CalculationCard key={calculation.id} calculation={calculation} startOpen={calculation.id === fresh} />)}</ul>
+        <ul data-tour="items" className="pf-list" style={{ gap: 16 }}>{calculations.map((calculation) => <CalculationCard key={calculation.id} calculation={calculation} startOpen={calculation.id === fresh} />)}</ul>
       )}
     </div>
   );

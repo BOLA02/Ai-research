@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useWorkspace } from "@/lib/workspace/provider";
 import type { ApiProject } from "@/lib/workspace/types";
+import { ToolGuide } from "./tool-guide";
 
 type Draft = Record<"studentName" | "registrationNumber" | "supervisorNames" | "coordinatorName" | "hodName" | "externalExaminerName" | "school" | "college" | "graduationYear", string>;
 
@@ -68,9 +69,10 @@ export function DetailsPage() {
     <div className="pf-section" style={{ maxWidth: 760 }}>
       <div className="pf-eyebrow">Tools</div>
       <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>Project details</h1>
-      <p className="pf-lede" style={{ marginBottom: 20 }}>These fill in your cover page, title page, declaration and approval page, so you type them once. Names are printed exactly as you write them here.</p>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}><ToolGuide id="details" label="Project details" steps={[{ target: "intro", placement: "bottom", title: "Type these once", body: <p>Your name, registration number, supervisor and the rest appear on the cover, title page, declaration and approval page.</p> }, { target: "add", placement: "bottom", title: "Fill in the form", body: <p>Names are printed exactly as you type them here. Leave the examiner blank until you know who it is, then press Save details.</p> }]} /></div>
+      <p data-tour="intro" className="pf-lede" style={{ marginBottom: 20 }}>These fill in your cover page, title page, declaration and approval page, so you type them once. Names are printed exactly as you write them here.</p>
 
-      <form onSubmit={save} className="pf-card" style={{ padding: 20, display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+      <form data-tour="add" onSubmit={save} className="pf-card" style={{ padding: 20, display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
         {FIELDS.map((field) => (
           <div key={field.name} style={field.wide ? { gridColumn: "1 / -1" } : undefined}>
             <label className="pf-label" htmlFor={field.name}>{field.label}</label>

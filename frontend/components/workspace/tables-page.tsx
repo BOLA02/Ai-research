@@ -6,6 +6,7 @@ import { Check, Copy, Plus, Trash2 } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { useReportIndex, useSectionOptions } from "@/lib/workspace/hooks";
 import type { ApiTable } from "@/lib/workspace/types";
+import { ToolGuide } from "./tool-guide";
 
 function TableCard({ table, number }: { table: ApiTable; number?: number }) {
   const { updateTable, deleteTable } = useWorkspace();
@@ -143,9 +144,10 @@ export function TablesPage() {
     <div className="pf-section" style={{ maxWidth: 900 }}>
       <div className="pf-eyebrow">Tools</div>
       <h1 style={{ margin: "0 0 6px", fontSize: 28 }}>Tables</h1>
-      <p className="pf-lede" style={{ marginBottom: 20 }}>Tables are numbered in the order they appear in your report, separately from figures. Mention one in your text with its marker, for example <code>[tab:results]</code>.</p>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}><ToolGuide id="tables" label="Tables" steps={[{ target: "intro", placement: "bottom", title: "Tables", body: <p>Results, component lists and specifications. Tables are numbered separately from figures, in the order they appear.</p> }, { target: "add", placement: "bottom", title: "Start with a caption", body: <p>Type what the table shows and pick its section. Then fill in the columns and rows.</p> }, { target: "items", placement: "bottom", title: "Fill it in and save", body: <p>Add rows and columns, type into the cells, then press Save table. Copy the marker and paste it into your text where the table is mentioned.</p> }]} /></div>
+      <p data-tour="intro" className="pf-lede" style={{ marginBottom: 20 }}>Tables are numbered in the order they appear in your report, separately from figures. Mention one in your text with its marker, for example <code>[tab:results]</code>.</p>
 
-      <form onSubmit={add} className="pf-card" style={{ padding: 16, marginBottom: 20 }}>
+      <form data-tour="add" onSubmit={add} className="pf-card" style={{ padding: 16, marginBottom: 20 }}>
         <div className="pf-label">Add a table</div>
         <div className="pf-inline-form" style={{ marginTop: 0, flexWrap: "wrap" }}>
           <input className="pf-input" style={{ flex: "1 1 240px" }} aria-label="Table caption" placeholder="Caption, e.g. Design specification" value={caption} onChange={(event) => setCaption(event.target.value)} maxLength={1000} />
@@ -160,7 +162,7 @@ export function TablesPage() {
       {tables.length === 0 ? (
         <div className="pf-empty"><h3>No tables yet</h3><p className="pf-muted">Specifications, measurements and comparisons go here.</p></div>
       ) : (
-        <ul className="pf-list" style={{ gap: 16 }}>{ordered.map((table) => <TableCard key={table.id} table={table} number={index?.tables.find((item) => item.id === table.id)?.number} />)}</ul>
+        <ul data-tour="items" className="pf-list" style={{ gap: 16 }}>{ordered.map((table) => <TableCard key={table.id} table={table} number={index?.tables.find((item) => item.id === table.id)?.number} />)}</ul>
       )}
     </div>
   );
