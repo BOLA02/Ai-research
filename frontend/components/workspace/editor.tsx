@@ -152,7 +152,7 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
           )}
         </div>
 
-        <div className="pf-paper">
+        <div className="pf-paper" data-tour="paper">
           {mode === "write" ? (
             <>
               <label className="sr-only" htmlFor="body" style={{ position: "absolute", left: -9999 }}>{title}</label>

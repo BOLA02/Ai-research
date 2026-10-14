@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { ArrowRight, Calculator, Image as ImageIcon, Info, Plus, Table2, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, Calculator, Compass, Image as ImageIcon, Info, Plus, Table2, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { exampleFor } from "@/lib/example/water-level";
 import { useWorkspace } from "@/lib/workspace/provider";
@@ -11,6 +11,7 @@ import { buildSectionTree, chapterTemplate, documentGuidance, flattenTree, isSta
 import { useReportIndex } from "@/lib/workspace/hooks";
 import { Editor } from "./editor";
 import { GuidancePanel } from "./guidance";
+import { Tour, hasSeen, markSeen, type TourStep } from "./tour";
 
 function useItems() {
   const { project, documents, chapters, template } = useWorkspace();
@@ -32,9 +33,30 @@ function NotFound({ what }: { what: string }) {
 
 /* ---------------------------------------------------------------- Home */
 
+const HOME_SEEN = "pf-seen-tour";
+
+const HOME_STEPS: TourStep[] = [
+  { target: "progress", placement: "right", title: "Your progress", body: <p>This bar fills as you start each part of your report, so you always know how far along you are.</p> },
+  { target: "front", placement: "right", title: "Front matter", body: <p>The title page, abstract, acknowledgements and the lists. Some of these are built for you from the rest of your report.</p> },
+  { target: "chapters", placement: "right", title: "Your chapters", body: <p>Write one section at a time. Each section has its own guide that says what examiners look for. You choose your own chapter titles.</p> },
+  { target: "tools", placement: "right", title: "Tools", body: <p>Add references, figures, tables and calculations here, then drop them into your text. Checks and Export are here too.</p> },
+  { target: "continue", placement: "bottom", title: "Start here", body: <p>This button takes you to the next part to write. Come back to this page any time to see where you left off.</p> },
+  { target: "deadlines", placement: "top", title: "Deadlines", body: <p>The milestones your department expects, so nothing catches you by surprise.</p> },
+];
+
 export function ProjectHome() {
   const { project, template } = useWorkspace();
   const items = useItems();
+  const [touring, setTouring] = useState(false);
+  const ready = Boolean(project);
+
+  // Offer the tour once, the first time a student opens a project.
+  useEffect(() => {
+    if (!ready || hasSeen(HOME_SEEN)) return;
+    const timer = window.setTimeout(() => setTouring(true), 700);
+    return () => window.clearTimeout(timer);
+  }, [ready]);
+
   if (!project) return null;
 
   const done = items.filter((item) => isStarted(item.content)).length;
@@ -52,15 +74,16 @@ export function ProjectHome() {
       </p>
       {next && (
         <div className="pf-actions">
-          <Link className="pf-btn pf-btn-primary" href={next.href}>
+          <Link data-tour="continue" className="pf-btn pf-btn-primary" href={next.href}>
             {done === 0 ? "Start writing" : "Continue writing"}: {next.title} <ArrowRight size={16} aria-hidden />
           </Link>
+          <button type="button" className="pf-btn" onClick={() => setTouring(true)}><Compass size={15} aria-hidden /> Show me around</button>
         </div>
       )}
 
       <div className="pf-two">
         {template && (
-          <section className="pf-card">
+          <section className="pf-card" data-tour="deadlines">
             <h3>Deadlines to plan for</h3>
             <ol className="pf-timeline">
               {template.milestones.map((milestone) => (
@@ -87,6 +110,7 @@ export function ProjectHome() {
           </section>
         )}
       </div>
+      {touring && <Tour steps={HOME_STEPS} label="Project tour" onClose={() => { markSeen(HOME_SEEN); setTouring(false); }} />}
     </div>
   );
 }

@@ -70,11 +70,12 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
               <button className="pf-icon-btn pf-close" onClick={() => setOpen(false)} aria-label="Close outline" style={{ display: open ? "inline-grid" : "none" }}><X size={18} /></button>
             </div>
             <Link href={base} style={{ textDecoration: "none", color: "inherit" }}><h2 className="pf-rail-title">{project.title}</h2></Link>
-            <div className="pf-progress" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="Writing progress"><i style={{ width: `${percent}%` }} /></div>
-            <div className="pf-progress-label"><span>{done} of {items.length} parts started</span><span>{percent}%</span></div>
+            <div data-tour="progress"><div className="pf-progress" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="Writing progress"><i style={{ width: `${percent}%` }} /></div>
+            <div className="pf-progress-label"><span>{done} of {items.length} parts started</span><span>{percent}%</span></div></div>
           </div>
 
           <nav className="pf-outline">
+            <div data-tour="front">
             <div className="pf-group">Front matter</div>
             {documents.map((doc) => (
               <Link key={doc.id} href={`${base}/page/${doc.id}`} className={`pf-link ${doc.isEnabled ? "" : "dim"}`} aria-current={current(`${base}/page/${doc.id}`)}>
@@ -84,6 +85,8 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
 
+            </div>
+            <div data-tour="chapters">
             <div className="pf-group">Chapters</div>
             {chapters.map((chapter) => (
               <div key={chapter.id}>
@@ -95,13 +98,16 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
               </div>
             ))}
             <ChapterAdder />
+            </div>
 
+            <div data-tour="tools">
             <div className="pf-group">Tools</div>
             {tools.map(({ label, slug, icon: Icon }) => (
               <Link key={slug} href={`${base}/${slug}`} className="pf-link" aria-current={current(`${base}/${slug}`)}>
                 <Icon size={15} aria-hidden /> {label}
               </Link>
             ))}
+            </div>
           </nav>
         </aside>
         <div className="pf-main">{children}</div>

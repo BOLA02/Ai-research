@@ -273,3 +273,34 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .pf-calc-error { display: flex; align-items: flex-start; gap: 6px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; background: var(--pf-danger-soft); color: var(--pf-danger); font-size: 13px; line-height: 1.4; }
 .pf-calc-error svg { flex: none; margin-top: 2px; }
 .pf-grid-edit input[aria-invalid="true"] { border-color: var(--pf-danger); background: #fffafa; }
+
+/* ------------------------------------------------------------ Spotlight guide */
+.pf-tour-block { position: fixed; z-index: 1000; background: rgba(20, 28, 38, 0.62); }
+.pf-tour-ring {
+  position: fixed; z-index: 1001; pointer-events: none; border-radius: 12px;
+  box-shadow: 0 0 0 3px var(--pf-accent), 0 0 0 7px rgba(180, 121, 42, 0.25);
+  transition: top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+}
+.pf-tour-card {
+  position: fixed; z-index: 1002; width: min(340px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto;
+  background: var(--pf-surface); color: var(--pf-ink); border-radius: 14px; padding: 16px 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); display: grid; gap: 10px;
+}
+.pf-tour-card h2 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
+.pf-tour-count { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--pf-accent); }
+.pf-tour-body { font-size: 14.5px; line-height: 1.5; color: var(--pf-ink-soft); }
+.pf-tour-body p { margin: 0; }
+.pf-tour-body ul { margin: 6px 0 0; padding-left: 18px; }
+.pf-tour-card .pf-btn { justify-self: start; }
+.pf-tour-dots { display: flex; gap: 5px; }
+.pf-tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--pf-line-strong); }
+.pf-tour-dots i.past { background: var(--pf-brand); opacity: .5; }
+.pf-tour-dots i.on { background: var(--pf-brand); }
+.pf-tour-nav { display: flex; gap: 8px; align-items: center; }
+.pf-tour-card .pf-tour-nav .pf-btn { justify-self: auto; }
+.pf-tour-skip { background: none; border: 0; padding: 4px 0; color: var(--pf-muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.pf-guide-mini { display: grid; gap: 10px; }
+.pf-guide-mini p { margin: 0; font-size: 14px; }
+.pf-guide-more { margin-top: 4px; }
+.pf-guide-more summary { cursor: pointer; font-size: 13px; color: var(--pf-ink-soft); }
+@media (prefers-reduced-motion: reduce) { .pf-tour-ring { transition: none; } }
