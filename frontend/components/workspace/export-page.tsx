@@ -105,6 +105,7 @@ export function ExportPage() {
               <div><dt>Paper</dt><dd>A4</dd></div>
               <div><dt>Font</dt><dd>{format.fontFamily}, {format.fontSizePt} pt</dd></div>
               <div><dt>Spacing</dt><dd>{format.bodyLineSpacing} lines</dd></div>
+              <div><dt>Text</dt><dd>{format.justified ? "Justified" : "Left-aligned"}</dd></div>
               <div><dt>Margins</dt><dd>L {format.marginsMm.left} · others {format.marginsMm.top} mm</dd></div>
               <div><dt>Page numbers</dt><dd>Top right, roman then 1, 2, 3</dd></div>
             </dl>

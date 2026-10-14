@@ -78,6 +78,7 @@ export function ProjectHome() {
             <dl className="pf-facts">
               <div><dt>Font</dt><dd>{format.fontFamily}, {format.fontSizePt} pt</dd></div>
               <div><dt>Line spacing</dt><dd>{format.bodyLineSpacing}</dd></div>
+              <div><dt>Text</dt><dd>{format.justified ? "Justified" : "Left-aligned"}</dd></div>
               <div><dt>Margins</dt><dd>L {format.marginsMm.left} · T/B/R {format.marginsMm.top} mm</dd></div>
               <div><dt>Length</dt><dd>{format.minPages} to about {format.maxPages} pages</dd></div>
               <div><dt>Referencing</dt><dd>{project.referenceStyle ?? template?.referenceStyle}</dd></div>

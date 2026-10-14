@@ -190,7 +190,7 @@ export async function buildDocx(model: ExportModel): Promise<Buffer> {
     const entries = model.references.map(
       (reference) =>
         new Paragraph({
-          alignment: AlignmentType.LEFT,
+          alignment: f.justified ? AlignmentType.JUSTIFIED : AlignmentType.LEFT,
           spacing: { after: 120, line: SINGLE },
           indent: { left: ieee ? 567 : 720, hanging: ieee ? 567 : 720 },
           tabStops: ieee ? [{ type: TabStopType.LEFT, position: 567 }] : [],

@@ -45,6 +45,15 @@ test("the document follows the department's page format", async () => {
   assert.match(document, /w:titlePg/, "the title page shows no number");
 });
 
+test("body text is justified to both margins, as the guidelines require", async () => {
+  const { document } = await parts();
+  const paragraphs = document.match(/<w:p>.*?<\/w:p>/gs) ?? [];
+  const containing = (text: string) => paragraphs.find((paragraph) => paragraph.includes(text))!;
+  for (const text of ["First paragraph.", "Second paragraph.", "Short abstract.", "A. Author"])
+    assert.match(containing(text), /<w:jc w:val="both"\/>/, `${text} is justified`);
+  assert.doesNotMatch(containing("First paragraph."), /<w:jc w:val="left"/);
+});
+
 test("page numbers sit in the top right header", async () => {
   const { headers } = await parts();
   assert.ok(headers.some((xml) => xml.includes('w:val="right"') && xml.includes("PAGE")));

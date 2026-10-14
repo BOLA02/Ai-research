@@ -95,6 +95,7 @@ export type Template = {
     fontFamily: string;
     fontSizePt: number;
     bodyLineSpacing: number;
+    justified: boolean;
     marginsMm: { left: number; top: number; right: number; bottom: number };
     minPages: number;
     maxPages: number;

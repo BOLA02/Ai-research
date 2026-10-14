@@ -123,7 +123,7 @@
 .pf-title-input:hover { border-bottom-color: var(--pf-line); }
 .pf-title-input:focus { outline: none; border-bottom-color: var(--pf-brand); }
 .pf-paper { min-height: 420px; padding: 36px 44px; background: var(--pf-paper); border: 1px solid var(--pf-line); border-radius: 4px; box-shadow: var(--pf-shadow); }
-.pf-textarea { display: block; width: 100%; min-height: 380px; padding: 0; border: 0; resize: none; background: transparent; color: #111; font-family: var(--pf-serif); font-size: 17px; line-height: 1.75; text-align: left; }
+.pf-textarea { display: block; width: 100%; min-height: 380px; padding: 0; border: 0; resize: none; background: transparent; color: #111; font-family: var(--pf-serif); font-size: 17px; line-height: 1.75; text-align: justify; }
 .pf-textarea:focus { outline: none; }
 .pf-textarea::placeholder { color: #a8a395; font-style: italic; }
 .pf-editor-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: var(--pf-muted); }
@@ -256,4 +256,4 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .pf-menu button.item:hover, .pf-menu button.item:focus-visible { background: var(--pf-brand-soft); }
 .pf-menu .hd { padding: 8px 10px 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pf-muted); }
 .pf-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; position: relative; }
-.pf-preview { min-height: 380px; font-family: var(--pf-serif); font-size: 17px; line-height: 1.75; white-space: pre-wrap; color: #111; }
+.pf-preview { min-height: 380px; font-family: var(--pf-serif); font-size: 17px; line-height: 1.75; white-space: pre-wrap; text-align: justify; color: #111; }
