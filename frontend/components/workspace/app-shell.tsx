@@ -9,8 +9,6 @@ import { useAuth } from "@/lib/auth";
 const links = [
   { label: "Projects", href: "/dashboard" },
   { label: "References", href: "/dashboard/references" },
-  { label: "Templates", href: "/dashboard/templates" },
-  { label: "Settings", href: "/dashboard/settings" },
 ];
 
 const isActive = (path: string, href: string) =>

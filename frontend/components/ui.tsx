@@ -1,5 +1,0 @@
-"use client";
-import { FileText } from "lucide-react"; import type { ReactNode } from "react";
-export function PageHeader({eyebrow,title,children}:{eyebrow?:string;title:string;children?:ReactNode}){return <div className="page-header"><div>{eyebrow&&<div className="eyebrow">{eyebrow}</div>}<h1 className="page-title">{title}</h1></div>{children}</div>}
-export function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section role="dialog" aria-modal="true" aria-label={title} className="modal" onMouseDown={e=>e.stopPropagation()}><div className="modal-title"><h2>{title}</h2><button className="btn btn-quiet" onClick={onClose} aria-label="Close dialog">Close</button></div>{children}</section></div>}
-export function EmptyState({title,copy,action}:{title:string;copy:string;action?:ReactNode}){return <div className="empty-state"><FileText size={25}/><h3>{title}</h3><p className="muted">{copy}</p>{action}</div>}
