@@ -34,7 +34,7 @@ export default function HelpPage() {
     <div className="hp">
       <header className="hp-top">
         <Link href="/" className="hp-brand"><span><PenLine size={16} aria-hidden /></span> ProjectForge</Link>
-        <Link href="/dashboard" className="hp-open">Open the app <ArrowRight size={15} aria-hidden /></Link>
+        <Link href="/dashboard" className="hp-open" prefetch={false}>Open the app <ArrowRight size={15} aria-hidden /></Link>
       </header>
 
       <div className="hp-layout">
@@ -62,7 +62,7 @@ export default function HelpPage() {
 
           <section id="video">
             <h2>Watch the video</h2>
-            <p>A short walkthrough of writing a report from sign-up to Word download.</p>
+            <p>A 3 minute narrated walkthrough, from sign-up to the Word download. Turn your sound on.</p>
             <video className="hp-video" controls preload="metadata" playsInline poster="/help/poster.jpg">
               <source src="/help/projectforge-walkthrough.mp4" type="video/mp4" />
               Your browser can&apos;t play this video. You can follow the written steps below instead.
@@ -159,7 +159,7 @@ export default function HelpPage() {
 
           <div className="hp-cta">
             <h2>Ready to start?</h2>
-            <Link href="/dashboard" className="hp-open">Open the app <ArrowRight size={15} aria-hidden /></Link>
+            <Link href="/dashboard" className="hp-open" prefetch={false}>Open the app <ArrowRight size={15} aria-hidden /></Link>
           </div>
         </main>
       </div>
