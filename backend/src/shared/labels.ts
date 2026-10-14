@@ -1,13 +1,15 @@
 /** A short, lower-case label made from a caption, used in [fig:label] and [tab:label] markers. */
+const FILLER = new Set(["a", "an", "the", "of", "for", "and", "in", "on", "to", "with", "by", "at", "is"]);
+
 export function labelFrom(caption: string) {
   const words = caption
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .split(/\s+/)
-    .slice(0, 4)
-    .join("-");
-  return words || "item";
+    .filter(Boolean);
+  const meaningful = words.filter((word) => !FILLER.has(word));
+  return (meaningful.length ? meaningful : words).slice(0, 3).join("-") || "item";
 }
 
 export function uniqueLabel(wanted: string, taken: Set<string>) {

@@ -90,7 +90,7 @@ export const exampleParts: ExamplePart[] = [
         { text: "It closes with what the results mean.", mark: 4 },
         { text: "It has no figures, tables or citations, which your guidelines say to leave out of the abstract." },
       ],
-      mistakes: ["Writing it first. Write it last, when you know your results.", "Copying the introduction into it.", "Adding citations or 'see Figure 3.1'."],
+      mistakes: ["Writing it first. Write it last, when you know your results.", "Copying the introduction into it.", "Adding citations or 'see Figure 1'."],
     },
   },
   {
@@ -234,12 +234,12 @@ export const exampleParts: ExamplePart[] = [
       {
         t: "p",
         mark: 1,
-        text: "Several approaches to automatic water level control have been reported. Five representative works are compared in Table 2.1.",
+        text: "Several approaches to automatic water level control have been reported. Five representative works are compared in Table 1.",
       },
       {
         t: "table",
         mark: 2,
-        caption: "Table 2.1: Comparison of related works",
+        caption: "Table 1: Comparison of related works",
         head: ["Work", "Method", "Strength", "Limitation"],
         rows: [
           ["[4]", "Float switch with relay", "Very simple", "Moving parts jam and wear"],
@@ -260,7 +260,7 @@ export const exampleParts: ExamplePart[] = [
       headline: "Compare other people's work. Don't just list it.",
       points: [
         { text: "The opening sentence tells the reader how many works are covered and where they're compared.", mark: 1 },
-        { text: "A table puts method, strength and limitation side by side. Your department asks for at least 5 related works.", mark: 2 },
+        { text: "A table puts method, strength and limitation side by side. Your department asks for at least 5 related works. Tables and figures are numbered 1, 2, 3 through the whole report.", mark: 2 },
         { text: "The discussion explains the trade-offs and cites each work by number.", mark: 3 },
       ],
       mistakes: ["One paragraph per paper with no comparison.", "Fewer than five works.", "Citing a paper you haven't read."],
@@ -287,7 +287,7 @@ export const exampleParts: ExamplePart[] = [
     why: {
       headline: "Show the hole in earlier work, then show how you fill it.",
       points: [
-        { text: "The gap comes straight from the limitations in Table 2.1.", mark: 1 },
+        { text: "The gap comes straight from the limitations in Table 1.", mark: 1 },
         { text: "The last sentence links the gap to your design.", mark: 2 },
       ],
       mistakes: ["Claiming nobody has ever done anything similar.", "A gap that your project doesn't actually fill."],
@@ -303,7 +303,7 @@ export const exampleParts: ExamplePart[] = [
       {
         t: "table",
         mark: 1,
-        caption: "Table 3.1: Design specification",
+        caption: "Table 2: Design specification",
         head: ["Parameter", "Value"],
         rows: [
           ["Mains input", "230 V AC, 50 Hz"],
@@ -412,7 +412,7 @@ export const exampleParts: ExamplePart[] = [
       {
         t: "figure",
         mark: 1,
-        caption: "Fig. 3.1: Block diagram of the water level controller",
+        caption: "Figure 1: Block diagram of the water level controller",
         nodes: ["230 V mains", "Transformer", "Rectifier and filter", "12 V regulator", "Probe sensing", "Latch and relay driver", "Relay", "Pump"],
       },
       {
@@ -509,7 +509,7 @@ export const exampleParts: ExamplePart[] = [
       {
         t: "table",
         mark: 1,
-        caption: "Table 5.1: Regulated output voltage against load current",
+        caption: "Table 3: Regulated output voltage against load current",
         head: ["Load current (mA)", "Output voltage (V)"],
         rows: [
           ["0", "12.02"],
@@ -521,7 +521,7 @@ export const exampleParts: ExamplePart[] = [
       {
         t: "table",
         mark: 2,
-        caption: "Table 5.2: Water volumes at which the pump switched",
+        caption: "Table 4: Water volumes at which the pump switched",
         head: ["Cycle", "Pump ON at (litres)", "Pump OFF at (litres)"],
         rows: [
           ["1", "52", "178"],
@@ -559,12 +559,12 @@ export const exampleParts: ExamplePart[] = [
       {
         t: "p",
         mark: 1,
-        text: "Objective (i) required a 12 V, 100 mA supply. Table 5.1 shows the output fell from 12.02 V at no load to 11.97 V at 100 mA, a change of 0.05 V or about 0.42%. The supply therefore stayed within 12.0 ± 0.1 V and the objective was met.",
+        text: "Objective (i) required a 12 V, 100 mA supply. Table 3 shows the output fell from 12.02 V at no load to 11.97 V at 100 mA, a change of 0.05 V or about 0.42%. The supply therefore stayed within 12.0 ± 0.1 V and the objective was met.",
       },
       {
         t: "p",
         mark: 2,
-        text: "Objectives (ii) and (iv) required the pump to switch at the low and high levels. Table 5.2 shows that the pump switched on at a mean of 51.0 litres, which is about 25% of the tank, and off at a mean of 179.8 litres, about 90%. It did so in all ten cycles.",
+        text: "Objectives (ii) and (iv) required the pump to switch at the low and high levels. Table 4 shows that the pump switched on at a mean of 51.0 litres, which is about 25% of the tank, and off at a mean of 179.8 litres, about 90%. It did so in all ten cycles.",
       },
       {
         t: "p",
@@ -667,7 +667,7 @@ export const exampleParts: ExamplePart[] = [
       headline: "Every number in the text must match an entry here, and the reverse.",
       points: [
         { text: "The list is in the order the sources were first cited, which is how IEEE numbering works.", mark: 1 },
-        { text: "Each type of source follows its own format: book, journal article, conference paper, website and thesis." },
+        { text: "Each type of source follows its own format: book, journal article, conference paper, website and thesis. In APA the same sources would be listed alphabetically and cited as (Author, year)." },
       ],
       mistakes: ["Listing sources you never cited in the text.", "Citing a number that's missing from the list.", "Mixing IEEE and APA styles."],
     },

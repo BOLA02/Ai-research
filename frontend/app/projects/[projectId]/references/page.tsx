@@ -1,1 +1,3 @@
-import { ReferenceManager } from "@/components/reference-manager"; export default function Page(){return <div className="document-area"><h1>References</h1><ReferenceManager/></div>}
+"use client";
+import { ReferencesPage } from "@/components/workspace/references-page";
+export default function Page() { return <ReferencesPage />; }

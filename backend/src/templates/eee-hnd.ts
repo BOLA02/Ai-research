@@ -289,7 +289,7 @@ const designChapters: ChapterTemplate[] = [
         "Review of Fundamental Concepts",
         "Explains the components and theory the reader needs to follow your design.",
         ["Which components and principles does your project rely on?", "Can you explain each one in a short paragraph?"],
-        tips(["Cite every source in IEEE style, e.g. [1]."]),
+        tips(["Cite every source with Insert › Citation, so it follows your reference style."]),
       ),
       section(
         "related-works",

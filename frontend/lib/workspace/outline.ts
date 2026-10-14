@@ -68,7 +68,7 @@ export function writingItems(
 const GENERIC_SECTION: Guidance = {
   purpose: "This is a section you added yourself. Keep it focused on one idea.",
   prompts: ["What is the one point this section should make?"],
-  tips: ["Cite every source in IEEE style, e.g. [1]."],
+  tips: ["Cite every source with Insert › Citation, so it follows your reference style."],
 };
 
 function findTemplateSection(sections: TemplateSection[], key: string): TemplateSection | undefined {

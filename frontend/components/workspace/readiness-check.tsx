@@ -18,7 +18,7 @@ const questions = [
     options: ["Not really", "I know some of it", "Yes, I could list the chapters and what each holds"],
   },
   {
-    title: "How comfortable are you citing sources in IEEE style?",
+    title: "How comfortable are you citing sources (for example in IEEE or APA style)?",
     options: ["I've never done it", "I've tried it, but I'm not sure I get it right", "Very comfortable"],
   },
 ];

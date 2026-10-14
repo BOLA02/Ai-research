@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Cpu, Wrench } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
+import type { ReferenceStyle } from "@/lib/workspace/types";
 import type { Template, TemplateSummary } from "@/lib/workspace/types";
 
 const copy: Record<TemplateSummary["projectType"], { icon: typeof Cpu; summary: string; points: string[] }> = {
@@ -32,6 +33,7 @@ export function NewProjectWizard() {
   const [templateId, setTemplateId] = useState("");
   const [step, setStep] = useState<1 | 2>(1);
   const [title, setTitle] = useState("");
+  const [style, setStyle] = useState<ReferenceStyle | null>(null);
   const [detail, setDetail] = useState<Template | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -61,7 +63,7 @@ export function NewProjectWizard() {
     try {
       const data = await api<{ project: { id: string } }>("/projects", {
         method: "POST",
-        body: JSON.stringify({ title: title.trim(), templateId }),
+        body: JSON.stringify({ title: title.trim(), templateId, referenceStyle: style ?? detail?.referenceStyle ?? "IEEE" }),
       });
       router.push(`/projects/${data.project.id}`);
     } catch (reason) {
@@ -124,6 +126,15 @@ export function NewProjectWizard() {
             <input id="title" className="pf-input" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={500} autoFocus placeholder="e.g. Design and Construction of a 5 kVA Inverter" />
             <p className="pf-hint">Keep it under 12 words if you can. Up to 20 is fine to make it explicit.</p>
           </div>
+          <div>
+            <div className="pf-label" id="style-label">Referencing style</div>
+            <div role="radiogroup" aria-labelledby="style-label" className="pf-seg">
+              {(["IEEE", "APA"] as const).map((option) => (
+                <button type="button" key={option} role="radio" aria-checked={(style ?? detail?.referenceStyle ?? "IEEE") === option} className={(style ?? detail?.referenceStyle ?? "IEEE") === option ? "on" : ""} onClick={() => setStyle(option)}>{option}</button>
+              ))}
+            </div>
+            <p className="pf-hint">Your department recommends IEEE for electrical and computing projects and APA for other programmes. You can change this later, and your sources reformat.</p>
+          </div>
           {chosen && (
             <div className="pf-card" style={{ padding: 16 }}>
               <div className="pf-label">Your report will follow</div>
@@ -132,8 +143,7 @@ export function NewProjectWizard() {
                 <div><dt>Department</dt><dd>{chosen.department}</dd></div>
                 <div><dt>Programme</dt><dd>{chosen.programme}</dd></div>
                 {detail && <div><dt>Chapters</dt><dd>{detail.chapters.length}</dd></div>}
-                {detail && <div><dt>Referencing</dt><dd>{detail.referenceStyle}</dd></div>}
-              </dl>
+                              </dl>
             </div>
           )}
           <div className="pf-actions">

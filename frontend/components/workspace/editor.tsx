@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { AlertCircle, Check, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AlertCircle, BookMarked, Check, ChevronLeft, ChevronRight, Image as ImageIcon, Loader2, Plus, Table2 } from "lucide-react";
+import { api } from "@/lib/api";
+import { useReportIndex } from "@/lib/workspace/hooks";
 import { useWorkspace, type ContentTarget } from "@/lib/workspace/provider";
 import { wordCount, type WritingItem } from "@/lib/workspace/outline";
 import type { Guidance } from "@/lib/workspace/types";
@@ -21,11 +23,20 @@ type Props = {
   placeholder: string;
   neighbours: { prev?: WritingItem; next?: WritingItem };
   banner?: React.ReactNode;
+  /** Shown under the writing area, before the Previous and Next buttons. */
+  after?: React.ReactNode;
 };
 
-export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner }: Props) {
-  const { setContent, saveState } = useWorkspace();
+export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner, after }: Props) {
+  const { project, sources, figures, tables, setContent, saveState, flushSaves } = useWorkspace();
+  const { index } = useReportIndex();
   const area = useRef<HTMLTextAreaElement>(null);
+  const caret = useRef<number | null>(null);
+  const [mode, setMode] = useState<"write" | "preview">("write");
+  const [preview, setPreview] = useState("");
+  const [previewing, setPreviewing] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const base = `/projects/${project?.id}`;
 
   // Grow the textarea with its content so the page scrolls instead of the box.
   useEffect(() => {
@@ -34,6 +45,49 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
     element.style.height = "auto";
     element.style.height = `${Math.max(element.scrollHeight, 380)}px`;
   }, [content, target.id]);
+
+  // After inserting a marker, put the cursor just after it.
+  useLayoutEffect(() => {
+    if (caret.current !== null && area.current) {
+      area.current.focus();
+      area.current.setSelectionRange(caret.current, caret.current);
+      caret.current = null;
+    }
+  }, [content]);
+
+  useEffect(() => setMode("write"), [target.id]);
+
+  // Close the Insert menu when the writer clicks elsewhere.
+  const toolbar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const close = (event: MouseEvent) => !toolbar.current?.contains(event.target as Node) && setMenu(false);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [menu]);
+
+  const insert = (marker: string) => {
+    const element = area.current;
+    const start = element?.selectionStart ?? content.length;
+    const end = element?.selectionEnd ?? content.length;
+    caret.current = start + marker.length;
+    setContent(target, `${content.slice(0, start)}${marker}${content.slice(end)}`);
+    setMenu(false);
+  };
+
+  const showPreview = async () => {
+    setMode("preview");
+    setPreviewing(true);
+    try {
+      await flushSaves();
+      const data = await api<{ text: string }>(`/projects/${project?.id}/report/resolve`, { method: "POST", body: JSON.stringify({ text: content }) });
+      setPreview(data.text);
+    } catch {
+      setPreview(content);
+    } finally {
+      setPreviewing(false);
+    }
+  };
 
   const usePrompt = (prompt: string) => {
     const gap = content && !content.endsWith("\n") ? "\n\n" : content ? "\n" : "";
@@ -61,18 +115,52 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
 
         {banner}
 
-        <div className="pf-paper">
-          <label className="sr-only" htmlFor="body" style={{ position: "absolute", left: -9999 }}>{title}</label>
-          <textarea
-            id="body"
-            ref={area}
-            className="pf-textarea"
-            value={content}
-            placeholder={placeholder}
-            onChange={(event) => setContent(target, event.target.value)}
-            spellCheck
-          />
+        <div className="pf-toolbar">
+          <div role="tablist" aria-label="View" className="pf-seg">
+            <button role="tab" aria-selected={mode === "write"} className={mode === "write" ? "on" : ""} onClick={() => setMode("write")}>Write</button>
+            <button role="tab" aria-selected={mode === "preview"} className={mode === "preview" ? "on" : ""} onClick={showPreview}>Preview</button>
+          </div>
+          {mode === "write" && (
+            <div ref={toolbar} style={{ position: "relative" }}>
+              <button className="pf-btn pf-btn-sm" aria-haspopup="menu" aria-expanded={menu} onClick={() => { caret.current = null; setMenu(!menu); }}><Plus size={14} aria-hidden /> Insert</button>
+              {menu && (
+                <div className="pf-menu" role="menu" style={{ right: 0, top: 38 }} onKeyDown={(event) => event.key === "Escape" && setMenu(false)}>
+                  <div className="hd"><BookMarked size={11} aria-hidden /> Citation</div>
+                  {sources.length === 0 && <div style={{ padding: "6px 10px", fontSize: 13 }} className="pf-muted">No sources yet. <Link href={`${base}/references`}>Add one</Link></div>}
+                  {sources.map((source) => <button key={source.id} role="menuitem" className="item" onClick={() => insert(`[@${source.citeKey}]`)}><strong>{source.citeKey}</strong><br /><span className="pf-muted" style={{ fontSize: 12 }}>{source.title}</span></button>)}
+                  <div className="hd"><ImageIcon size={11} aria-hidden /> Figure</div>
+                  {figures.length === 0 && <div style={{ padding: "6px 10px", fontSize: 13 }} className="pf-muted">No figures yet. <Link href={`${base}/figures`}>Add one</Link></div>}
+                  {figures.map((figure) => <button key={figure.id} role="menuitem" className="item" onClick={() => insert(`[fig:${figure.label}]`)}>Figure {index?.figures.find((item) => item.id === figure.id)?.number ?? ""} <span className="pf-muted" style={{ fontSize: 12 }}>{figure.caption}</span></button>)}
+                  <div className="hd"><Table2 size={11} aria-hidden /> Table</div>
+                  {tables.length === 0 && <div style={{ padding: "6px 10px", fontSize: 13 }} className="pf-muted">No tables yet. <Link href={`${base}/tables`}>Add one</Link></div>}
+                  {tables.map((table) => <button key={table.id} role="menuitem" className="item" onClick={() => insert(`[tab:${table.label}]`)}>Table {index?.tables.find((item) => item.id === table.id)?.number ?? ""} <span className="pf-muted" style={{ fontSize: 12 }}>{table.caption}</span></button>)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
+        <div className="pf-paper">
+          {mode === "write" ? (
+            <>
+              <label className="sr-only" htmlFor="body" style={{ position: "absolute", left: -9999 }}>{title}</label>
+              <textarea
+                id="body"
+                ref={area}
+                className="pf-textarea"
+                value={content}
+                placeholder={placeholder}
+                onChange={(event) => setContent(target, event.target.value)}
+                spellCheck
+              />
+            </>
+          ) : (
+            <div className="pf-preview" aria-live="polite">
+              {previewing ? <span className="pf-muted">Formatting your citations…</span> : preview || <span className="pf-muted">Nothing written yet.</span>}
+            </div>
+          )}
+        </div>
+        {mode === "preview" && <p className="pf-hint">This is how your citations, figure numbers and table numbers will read in your {index?.style ?? ""} report. Go back to <strong>Write</strong> to edit.</p>}
 
         <div className="pf-editor-foot">
           <span>{wordCount(content)} words</span>
@@ -82,6 +170,8 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
             {saveState === "error" && <><AlertCircle size={14} aria-hidden /> Couldn't save. Your text is still here, keep typing to retry.</>}
           </span>
         </div>
+
+        {after}
 
         <div className="pf-pager">
           {neighbours.prev ? <Link className="pf-btn" href={neighbours.prev.href}><ChevronLeft size={16} aria-hidden /> {neighbours.prev.title}</Link> : <span />}

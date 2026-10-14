@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ArrowRight, Info, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, Image as ImageIcon, Info, Plus, Table2, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { exampleFor } from "@/lib/example/water-level";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, chapterTemplate, documentGuidance, flattenTree, isStarted, sectionGuidance, wordCount, writingItems, type SectionNode } from "@/lib/workspace/outline";
+import { useReportIndex } from "@/lib/workspace/hooks";
 import { Editor } from "./editor";
 import { GuidancePanel } from "./guidance";
 
@@ -79,7 +80,7 @@ export function ProjectHome() {
               <div><dt>Line spacing</dt><dd>{format.bodyLineSpacing}</dd></div>
               <div><dt>Margins</dt><dd>L {format.marginsMm.left} · T/B/R {format.marginsMm.top} mm</dd></div>
               <div><dt>Length</dt><dd>{format.minPages} to about {format.maxPages} pages</dd></div>
-              <div><dt>Referencing</dt><dd>{template?.referenceStyle}</dd></div>
+              <div><dt>Referencing</dt><dd>{project.referenceStyle ?? template?.referenceStyle}</dd></div>
             </dl>
             <p className="pf-hint">The export applies these for you, so you can focus on the writing.</p>
           </section>
@@ -90,6 +91,21 @@ export function ProjectHome() {
 }
 
 /* ------------------------------------------------------ Front-matter page */
+
+function GeneratedList({ kind }: { kind: "figures" | "tables" }) {
+  const { figures, tables } = useWorkspace();
+  const { index } = useReportIndex();
+  const rows = (kind === "figures" ? index?.figures : index?.tables) ?? [];
+  const captions = new Map((kind === "figures" ? figures : tables).map((item) => [item.id, item.caption]));
+  const word = kind === "figures" ? "Figure" : "Table";
+  return (
+    <div className="pf-paper" style={{ fontFamily: "var(--pf-serif)" }}>
+      {rows.length === 0 ? <p className="pf-muted" style={{ margin: 0 }}>No {kind} yet. Add them in the {kind === "figures" ? "Figures" : "Tables"} tool and they will be listed here, in order.</p> : (
+        <ol style={{ margin: 0, padding: 0, listStyle: "none", lineHeight: 1.9 }}>{rows.map((row) => <li key={row.id}>{word} {row.number}: {captions.get(row.id)}</li>)}</ol>
+      )}
+    </div>
+  );
+}
 
 export function DocumentPage() {
   const { documentId } = useParams<{ documentId: string }>();
@@ -111,6 +127,8 @@ export function DocumentPage() {
           <nav className="pf-crumbs" aria-label="Breadcrumb">{crumbs.map((crumb, index) => <span key={crumb.label}>{index > 0 && " / "}{crumb.label}</span>)}</nav>
           <h1 className="pf-title-input" style={{ margin: "0 0 14px" }}>{doc.title}</h1>
           <div className="pf-callout"><Info size={18} aria-hidden style={{ flex: "none", marginTop: 2 }} /><span>This page is built for you from your project details when you export. There is nothing to type here.</span></div>
+          {doc.type === "LIST_OF_FIGURES" && <GeneratedList kind="figures" />}
+          {doc.type === "LIST_OF_TABLES" && <GeneratedList kind="tables" />}
           {showCover && (
             <div className="pf-paper" style={{ textAlign: "center", fontFamily: "var(--pf-serif)", fontWeight: 700, lineHeight: 1.9, fontSize: doc.type === "COVER_PAGE" ? 16 : 14 }}>
               <p style={{ margin: "0 0 28px" }}>{project.title.toUpperCase()}</p>
@@ -160,6 +178,28 @@ export function DocumentPage() {
 
 /* -------------------------------------------------------------- Section */
 
+function Attachments({ sectionId }: { sectionId: string }) {
+  const { project, figures, tables } = useWorkspace();
+  const { index } = useReportIndex();
+  const here = figures.filter((figure) => figure.sectionId === sectionId);
+  const hereTables = tables.filter((table) => table.sectionId === sectionId);
+  const base = `/projects/${project?.id}`;
+  return (
+    <section className="pf-card" style={{ padding: 16, marginTop: 18 }} aria-label="Figures and tables in this section">
+      <div className="pf-label">Figures and tables in this section</div>
+      {here.length + hereTables.length === 0 && <p className="pf-hint" style={{ marginTop: 0 }}>None yet. Add a figure or table here and it is numbered for you.</p>}
+      <ul className="pf-list" style={{ marginBottom: 10 }}>
+        {here.map((figure) => <li key={figure.id}><Link className="pf-row" href={`${base}/figures`}><ImageIcon size={16} aria-hidden /><span className="grow"><strong>Figure {index?.figures.find((item) => item.id === figure.id)?.number}</strong> {figure.caption}<small>[fig:{figure.label}]</small></span></Link></li>)}
+        {hereTables.map((table) => <li key={table.id}><Link className="pf-row" href={`${base}/tables`}><Table2 size={16} aria-hidden /><span className="grow"><strong>Table {index?.tables.find((item) => item.id === table.id)?.number}</strong> {table.caption}<small>[tab:{table.label}]</small></span></Link></li>)}
+      </ul>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Link className="pf-btn pf-btn-sm" href={`${base}/figures?section=${sectionId}`}><Plus size={14} aria-hidden /> Figure</Link>
+        <Link className="pf-btn pf-btn-sm" href={`${base}/tables?section=${sectionId}`}><Plus size={14} aria-hidden /> Table</Link>
+      </div>
+    </section>
+  );
+}
+
 export function SectionPage() {
   const { sectionId } = useParams<{ sectionId: string }>();
   const { project, chapters, template, renameSection } = useWorkspace();
@@ -190,6 +230,7 @@ export function SectionPage() {
       exampleHref={exampleHref(exampleFor({ templateKey: section.templateKey }))}
       placeholder="Start writing. Use the questions on the right if you're not sure where to begin."
       neighbours={{ prev: items[index - 1], next: items[index + 1] }}
+      after={<Attachments sectionId={section.id} />}
     />
   );
 }
