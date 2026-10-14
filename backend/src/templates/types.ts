@@ -66,6 +66,8 @@ export type Milestone = {
   detail: string;
 };
 
+import type { ExaminerCriteria } from "./examiner";
+
 export type ReportTemplate = {
   id: string;
   name: string;
@@ -79,6 +81,7 @@ export type ReportTemplate = {
   documents: DocumentTemplate[];
   chapters: ChapterTemplate[];
   requirements: Requirement[];
+  examiner: ExaminerCriteria;
   milestones: Milestone[];
   format: FormatRules;
 };

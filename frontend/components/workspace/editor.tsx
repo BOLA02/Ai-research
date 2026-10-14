@@ -8,6 +8,7 @@ import { useReportIndex } from "@/lib/workspace/hooks";
 import { useWorkspace, type ContentTarget } from "@/lib/workspace/provider";
 import { wordCount, type WritingItem } from "@/lib/workspace/outline";
 import type { Guidance } from "@/lib/workspace/types";
+import { CoachPanel } from "./coach-panel";
 import { GuidancePanel } from "./guidance";
 
 type Props = {
@@ -25,9 +26,11 @@ type Props = {
   banner?: React.ReactNode;
   /** Shown under the writing area, before the Previous and Next buttons. */
   after?: React.ReactNode;
+  /** Pages other than chapter sections that the writing coach can read, such as the abstract. */
+  coachable?: boolean;
 };
 
-export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner, after }: Props) {
+export function Editor({ target, title, onRename, crumbs, content, guidance, optional, custom, exampleHref, placeholder, neighbours, banner, after, coachable }: Props) {
   const { project, sources, figures, tables, setContent, saveState, flushSaves } = useWorkspace();
   const { index } = useReportIndex();
   const area = useRef<HTMLTextAreaElement>(null);
@@ -179,7 +182,14 @@ export function Editor({ target, title, onRename, crumbs, content, guidance, opt
         </div>
       </div>
 
-      <GuidancePanel guidance={guidance} optional={optional} custom={custom} exampleHref={exampleHref} onUsePrompt={usePrompt} />
+      <GuidancePanel
+        guidance={guidance}
+        optional={optional}
+        custom={custom}
+        exampleHref={exampleHref}
+        onUsePrompt={usePrompt}
+        extra={target.kind === "section" || coachable ? <CoachPanel target={{ kind: target.kind, id: target.id }} content={content} onUseQuestion={usePrompt} /> : null}
+      />
     </div>
   );
 }

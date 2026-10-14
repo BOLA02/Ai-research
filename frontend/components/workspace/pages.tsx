@@ -168,6 +168,7 @@ export function DocumentPage() {
         placeholder={doc.type === "ABSTRACT" ? "Write this last. Cover what you did, how, what you found and what it means." : "Start writing…"}
         neighbours={{ prev: items[index - 1], next: items[index + 1] }}
         banner={banner}
+        coachable={doc.type === "ABSTRACT"}
       />
       {info?.optional && doc.isEnabled && (
         <div className="pf-editor-wrap" style={{ paddingTop: 0 }}>

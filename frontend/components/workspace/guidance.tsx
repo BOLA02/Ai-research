@@ -11,12 +11,14 @@ type Props = {
   custom?: boolean;
   /** Link to the matching part of the worked example, when there is one. */
   exampleHref?: string;
+  /** Extra cards under the guidance, such as the writing coach. */
+  extra?: React.ReactNode;
   /** Called with a prompt the student chose to answer. */
   onUsePrompt?: (prompt: string) => void;
 };
 
 /** "What examiners expect": purpose, question prompts and tips from the department guidelines. */
-export function GuidancePanel({ guidance, optional, custom, exampleHref, onUsePrompt }: Props) {
+export function GuidancePanel({ guidance, optional, custom, exampleHref, extra, onUsePrompt }: Props) {
   const [open, setOpen] = useState(true);
   const hasPurpose = guidance.purpose.length > 0;
 
@@ -60,6 +62,7 @@ export function GuidancePanel({ guidance, optional, custom, exampleHref, onUsePr
           )}
         </>
       )}
+      {extra}
     </aside>
   );
 }

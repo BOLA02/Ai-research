@@ -2,6 +2,7 @@ import { eeeHndDesign, eeeHndMaintenance } from "./eee-hnd";
 import type { ReportTemplate } from "./types";
 
 export * from "./types";
+export { SECTION_ADVICE } from "./examiner";
 
 export const templates: Record<string, ReportTemplate> = {
   [eeeHndDesign.id]: eeeHndDesign,

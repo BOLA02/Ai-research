@@ -34,3 +34,14 @@ Markers in text: `[@key]` or `[@key, p. 33]` or `[@a; @b]` for sources, `[fig:la
 - `GET /api/projects/:projectId/export/docx` returns the report as a Word document that follows the department template's format rules: A4, Times New Roman 12, 1.5 spacing, left margin 25 mm and others 20 mm, justified text, page numbers top right, roman numerals for the front matter and 1, 2, 3 for the body, and each chapter on a new page. It includes the cover and title pages, the declaration and approval pages filled from the project details, a table of contents and lists of figures and tables built from bookmarks, every chapter with numbered figures and tables, the references in the chosen style and any appendices.
 - The table of contents and lists use page-reference fields. The document asks Word to update fields when it opens, which fills in the page numbers.
 - Figure images are PNG or JPEG, up to 3 MB.
+
+## Writing coach
+
+The coach reviews a section (or the abstract) and gives feedback: what works, what is missing, what examiners will look for, and questions to answer. It never writes the section for the student.
+
+- **Switched on by `ANTHROPIC_API_KEY`.** With no key, `GET /api/ai/status` reports `enabled: false` and the interface hides the coach. The key stays on the server.
+- `POST /api/projects/:projectId/ai/review` with `{ kind: "section" | "document", id }`. Only chapter sections and the abstract can be reviewed. The text is read from the database, so unsaved edits are not sent.
+- **What the model sees:** the department template's guidance for that part, the examiner questions and report criteria from the guidelines (`src/templates/examiner.ts`), writing advice from the guidelines' content summary, the project's Chapter 1 objectives for discussion and conclusion sections, and the student's text with citation markers already resolved. Student text is placed inside `<student_text>` and the system prompt tells the model to treat it as data.
+- **Guardrails:** at least 30 and at most 8000 words; a daily allowance per student (`AI_DAILY_LIMIT`, default 20, counted in UTC) and a per-minute limit (`AI_BURST_PER_MINUTE`, default 6); a failed or declined review gives its allowance back; quotes the model attributes to the student are checked against the text and dropped if they are not there.
+- **Model:** `AI_MODEL`, default `claude-opus-5-5`, with `effort: "medium"`, structured JSON output, and `fallbacks: "default"` so a request declined by a safety classifier is retried on the model Anthropic recommends.
+- **Privacy:** the student's text is sent to Anthropic to generate the feedback and is not stored by ProjectForge. The interface says so.

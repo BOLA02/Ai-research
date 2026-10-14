@@ -184,3 +184,16 @@ export type ReportIndex = {
 export type Severity = "error" | "warning" | "info" | "ok";
 export type CheckLink = { kind: "section"; id: string } | { kind: "document"; id: string } | { kind: "tool"; tool: "references" | "figures" | "tables" | "details" };
 export type Check = { id: string; severity: Severity; title: string; detail: string; link?: CheckLink };
+
+/* ---- Writing coach ---- */
+
+export type CoachReview = {
+  readiness: "needs_more" | "developing" | "nearly_there";
+  overall: string;
+  strengths: string[];
+  gaps: { issue: string; quote: string; why: string; howToFix: string }[];
+  questions: string[];
+  style: string[];
+};
+
+export type CoachStatus = { enabled: boolean; dailyLimit: number; remaining: number };

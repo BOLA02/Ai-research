@@ -7,6 +7,7 @@ import type {
   Requirement,
   SectionTemplate,
 } from "./types";
+import { KADUNA_POLY_EXAMINER_CRITERIA } from "./examiner";
 
 const section = (
   key: string,
@@ -667,6 +668,7 @@ const base = {
   referenceStyle: "IEEE" as const,
   documents,
   requirements,
+  examiner: KADUNA_POLY_EXAMINER_CRITERIA,
   milestones,
   format: FORMAT,
 };

@@ -257,3 +257,11 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .pf-menu .hd { padding: 8px 10px 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pf-muted); }
 .pf-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; position: relative; }
 .pf-preview { min-height: 380px; font-family: var(--pf-serif); font-size: 17px; line-height: 1.75; white-space: pre-wrap; text-align: justify; color: #111; }
+
+/* Writing coach */
+.pf-coach-h { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--pf-muted); }
+.pf-gap { padding: 12px; border: 1px solid var(--pf-line); border-radius: 8px; background: #fff; font-size: 14px; line-height: 1.5; color: var(--pf-ink-soft); }
+.pf-gap strong { display: block; margin-bottom: 6px; color: var(--pf-ink); }
+.pf-gap p { margin: 6px 0 0; font-size: 14px; }
+.pf-gap blockquote { margin: 6px 0 0; padding: 6px 10px; border-left: 3px solid var(--pf-accent); background: var(--pf-accent-soft); font: italic 14px var(--pf-serif); color: #4d3410; }
+.pf-gap blockquote svg { vertical-align: -2px; margin-right: 4px; }

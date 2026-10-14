@@ -64,6 +64,7 @@ model User {
   projects     Project[]       @relation("ProjectOwner")
   memberships  ProjectMember[]
   sessions     Session[]
+  aiUsage      AiUsage[]
 
   @@index([email, isActive])
 }
@@ -249,4 +250,15 @@ model ReportTable {
   @@unique([projectId, label])
   @@index([projectId])
   @@index([sectionId])
+}
+
+/// How many writing-coach reviews a student has used on a given day (UTC).
+model AiUsage {
+  id     String   @id @default(uuid()) @db.Uuid
+  userId String   @db.Uuid
+  day    DateTime @db.Date
+  count  Int      @default(0)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
 }
