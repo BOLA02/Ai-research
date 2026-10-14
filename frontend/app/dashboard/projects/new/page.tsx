@@ -1,1 +1,2 @@
-import {NewProjectPage} from "@/components/new-project-page";export default function Page(){return <NewProjectPage/>}
+import { NewProjectWizard } from "@/components/workspace/new-project-wizard";
+export default function Page() { return <NewProjectWizard />; }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./workspace.css";
 import { ProjectProvider } from "@/lib/project-store";
 import { AuthProvider } from "@/lib/auth";
 
