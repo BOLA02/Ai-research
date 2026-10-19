@@ -374,8 +374,8 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .bk-num.top { right: 76px; top: 34px; }
 .bk-p { margin: 0 0 12pt; }
 .bk-abstract { line-height: var(--bk-abs-line, 1); }
-.bk-item { display: flex; gap: 10px; padding-left: 36px; text-indent: -36px; margin-bottom: 6pt; }
-.bk-item > .bk-marker { flex: none; width: 26px; text-indent: 0; }
+.bk-item { display: flex; gap: 10px; padding-left: 24px; margin-bottom: 6pt; }
+.bk-item > .bk-marker { flex: none; min-width: 22px; }
 .bk-item > span:last-child { flex: 1; }
 .bk-newpage { break-before: column; }
 .bk-front-h, .bk-ch-h { text-align: center; font-size: 1em; font-weight: 700; margin: 0 0 12pt; line-height: 1.2; }
