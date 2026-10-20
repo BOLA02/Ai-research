@@ -29,6 +29,23 @@ The website forwards everything under `/api` to the API. The browser therefore o
 4. **Settings → Networking → Generate Domain.** Note the address, e.g. `https://projectforge-api.up.railway.app`.
 5. Deploy. Each start runs `prisma migrate deploy` (creates or updates the tables) and then starts the server. Open `<api address>/api/health`; it should answer `{"success":true,...}`.
 
+## 1b. Or: API on Render and database on Neon (free)
+
+Use this instead of section 1 if you want to stay on free plans. Do not use both.
+
+1. **Neon:** create a project at neon.tech and copy the connection string (`postgresql://…?sslmode=require`). This is your `DATABASE_URL`.
+2. **Render:** **New → Web Service**, pick this repository, then set:
+   - **Root Directory:** `backend`
+   - **Runtime:** Node
+   - **Build Command:** `npm ci --include=dev && npm run build`
+   - **Start Command:** `npm run start:prod`
+   - **Health Check Path:** `/api/health`
+   - **Instance Type:** Free
+3. Add the same variables as in section 1, with `DATABASE_URL` set to the Neon string. Add `TRUST_PROXY=1`.
+4. Copy the Render address (`https://something.onrender.com`). It is your `API_ORIGIN` on Vercel (section 2).
+
+On the free plan Render puts the server to sleep when idle, so the first visit after a quiet period can take up to a minute. A restart during a deploy causes a gap of a minute or two. Deploy at a quiet time.
+
 ## 2. Website on Vercel
 
 1. **Add New → Project** → import this repo. Set **Root Directory** to `frontend`. The framework is detected as Next.js.
