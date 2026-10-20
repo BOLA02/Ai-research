@@ -96,7 +96,7 @@ export function GuidancePanel({ guidance, optional, custom, extra, onUsePrompt }
         </section>
       )}
       {extra && <div data-tour="coach">{extra}</div>}
-      {touring && <Tour steps={steps} label="Section guide" onClose={close} />}
+      {touring && <Tour id="section" steps={steps} label="Section guide" onClose={close} />}
     </aside>
   );
 }

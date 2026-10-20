@@ -24,7 +24,7 @@ export function ChecksPage() {
     setError("");
     try {
       await flushSaves();
-      const data = await api<{ checks: Check[] }>(`/projects/${projectId}/report/checks`);
+      const data = await api<{ checks: Check[] }>(`/projects/${projectId}/report/checks?track=1`);
       setChecks(data.checks);
     } catch {
       setError("We couldn't run the checks. Try again in a moment.");

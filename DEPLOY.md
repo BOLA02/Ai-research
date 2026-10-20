@@ -38,6 +38,8 @@ The website forwards everything under `/api` to the API. The browser therefore o
 | --- | --- |
 | `API_ORIGIN` | the Railway address from step 4 above (no trailing slash) |
 | `SESSION_COOKIE_NAME` | leave out unless you changed it on the API |
+| `ADMIN_SLUG` | a long secret word such as `desk-7f3k9q2m` (8 to 60 letters, numbers, `-` or `_`). Your admin page is then at `https://your-site/desk-7f3k9q2m`, and `/admin` does not exist. Never link to it. Set it before the build (changing it means redeploying). |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | the email shown on the privacy page for data requests |
 
 3. Deploy. `FRONTEND_URL` on Railway must equal the final Vercel address (if you add a custom domain, update it and redeploy the API).
 

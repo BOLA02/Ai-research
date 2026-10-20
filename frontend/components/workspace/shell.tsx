@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { track } from "@/lib/analytics";
 import { ArrowLeft, BookOpen, BookOpenText, Calculator, CheckSquare, Download, IdCard, Image as ImageIcon, Menu, Plus, Table2, X } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { buildSectionTree, isStarted, writingItems, type SectionNode } from "@/lib/workspace/outline";
@@ -24,6 +25,12 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => setOpen(false), [path]);
+
+  // Which tools students open, for the site owner's statistics.
+  useEffect(() => {
+    const tool = path.split("/")[3];
+    if (project && tool && tools.some((item) => item.slug === tool)) track({ type: "tool_opened", tool });
+  }, [path, project]);
 
   const items = useMemo(() => (project ? writingItems(project.id, documents, chapters, template) : []), [project, documents, chapters, template]);
   const done = items.filter((item) => isStarted(item.content)).length;

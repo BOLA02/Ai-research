@@ -109,3 +109,99 @@ export async function listProjects(input: { page: number }) {
     projects: rows.map((row) => ({ id: row.id, title: row.title, template: row.templateId, owner: { name: `${row.owner.firstName} ${row.owner.lastName}`, email: row.owner.email }, created: row.createdAt.toISOString(), updated: row.updatedAt.toISOString(), sectionsStarted: Number(byProject.get(row.id)?.started ?? 0), words: Number(byProject.get(row.id)?.words ?? 0) })),
   };
 }
+
+/* ---------------------------------------------------------------- insights */
+
+const num = (value: unknown) => Number(value ?? 0);
+
+/**
+ * Where students get stuck. Everything here is counted, never read: how many have started
+ * each section, which checks fail most, which guide steps people leave at. No student text.
+ */
+export async function insights() {
+  const owners = async (join: string, extra = "") =>
+    num((await prisma.$queryRawUnsafe<{ n: bigint }[]>(`select count(distinct p."ownerId") as n from "Project" p ${join} ${extra}`))[0]?.n);
+  const distinctUsers = async (type: string) =>
+    num((await prisma.$queryRaw<{ n: bigint }[]>(Prisma.sql`select count(distinct "userId") as n from "ActivityLog" where type = ${type} and "userId" is not null`))[0]?.n);
+
+  const [signedUp, onboarded, withProject, wroteSection, addedSource, addedFigure, addedCalc, ranChecks, exported] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { onboardedAt: { not: null } } }),
+    owners(""),
+    owners(`join "Chapter" c on c."projectId" = p.id join "Section" s on s."chapterId" = c.id`, `where length(btrim(s.content)) > 0`),
+    owners(`join "Source" x on x."projectId" = p.id`),
+    owners(`join "Figure" x on x."projectId" = p.id`, `where x."mimeType" is not null`),
+    owners(`join "Calculation" x on x."projectId" = p.id`),
+    distinctUsers("checks_run"),
+    distinctUsers("export_docx"),
+  ]);
+  const funnel = [
+    { step: "Signed up", users: signedUp },
+    { step: "Answered the readiness questions", users: onboarded },
+    { step: "Created a project", users: withProject },
+    { step: "Wrote in at least one section", users: wroteSection },
+    { step: "Added a reference", users: addedSource },
+    { step: "Added a figure with a picture", users: addedFigure },
+    { step: "Added a calculation", users: addedCalc },
+    { step: "Ran the checks", users: ranChecks },
+    { step: "Downloaded the Word report", users: exported },
+  ];
+
+  const sectionRows = await prisma.$queryRaw<{ key: string; title: string; chapter: number; projects: bigint; started: bigint; words: bigint }[]>(Prisma.sql`
+    select s."templateKey" as key, min(s.title) as title, min(c.number) as chapter, count(*) as projects,
+           count(*) filter (where length(btrim(s.content)) > 0) as started,
+           coalesce(round(avg(cardinality(regexp_split_to_array(btrim(s.content), '\\s+'))) filter (where length(btrim(s.content)) > 0)), 0) as words
+    from "Section" s join "Chapter" c on c.id = s."chapterId"
+    where s."templateKey" is not null group by s."templateKey" order by min(c.number), min(s."position")`);
+  const sections = sectionRows.map((row) => ({ key: row.key, title: row.title, chapter: num(row.chapter), projects: num(row.projects), started: num(row.started), startedPct: num(row.projects) ? Math.round((num(row.started) / num(row.projects)) * 100) : 0, avgWords: num(row.words) }));
+
+  const failing = await prisma.$queryRaw<{ id: string; n: bigint }[]>(Prisma.sql`
+    select unnest(string_to_array(meta->>'open', ',')) as id, count(*) as n from "ActivityLog"
+    where type = 'checks_run' and "createdAt" >= now() - interval '30 days' and coalesce(meta->>'open', '') <> '' group by 1 order by 2 desc limit 12`);
+  const runs = await prisma.$queryRaw<{ n: bigint; u: bigint }[]>(Prisma.sql`select count(*) as n, count(distinct "userId") as u from "ActivityLog" where type = 'checks_run' and "createdAt" >= now() - interval '30 days'`);
+
+  const guideRows = await prisma.$queryRaw<{ guide: string; opened: bigint; closed: bigint; completed: bigint }[]>(Prisma.sql`
+    select meta->>'guide' as guide, count(*) filter (where type = 'guide_opened') as opened, count(*) filter (where type = 'guide_closed') as closed,
+           count(*) filter (where type = 'guide_closed' and meta->>'completed' = 'true') as completed
+    from "ActivityLog" where type in ('guide_opened', 'guide_closed') and "createdAt" >= now() - interval '30 days' group by 1 order by 2 desc`);
+  const leftAt = await prisma.$queryRaw<{ guide: string; step: number; n: bigint }[]>(Prisma.sql`
+    select meta->>'guide' as guide, (meta->>'step')::int as step, count(*) as n from "ActivityLog"
+    where type = 'guide_closed' and meta->>'completed' = 'false' and "createdAt" >= now() - interval '30 days' group by 1, 2 order by 3 desc`);
+  const guides = guideRows.map((row) => {
+    const worst = leftAt.find((item) => item.guide === row.guide);
+    return { guide: row.guide, opened: num(row.opened), closed: num(row.closed), completed: num(row.completed), skipped: Math.max(0, num(row.closed) - num(row.completed)), mostLeftAtStep: worst ? worst.step + 1 : null, leftAtCount: worst ? num(worst.n) : 0 };
+  });
+
+  const tools = await prisma.$queryRaw<{ tool: string; opens: bigint; users: bigint }[]>(Prisma.sql`
+    select meta->>'tool' as tool, count(*) as opens, count(distinct "userId") as users from "ActivityLog" where type = 'tool_opened' and "createdAt" >= now() - interval '30 days' group by 1 order by 2 desc`);
+  const errors = await prisma.$queryRaw<{ code: string; n: bigint; users: bigint }[]>(Prisma.sql`
+    select meta->>'code' as code, count(*) as n, count(distinct "userId") as users from "ActivityLog" where type = 'client_error' and "createdAt" >= now() - interval '30 days' group by 1 order by 2 desc limit 10`);
+  const signupFields = await prisma.$queryRaw<{ field: string; n: bigint }[]>(Prisma.sql`
+    select unnest(string_to_array(meta->>'fields', ',')) as field, count(*) as n from "ActivityLog" where type = 'signup_failed' and "createdAt" >= now() - interval '30 days' group by 1 order by 2 desc`);
+  const stalled = await prisma.user.count({
+    where: { createdAt: { lt: since(3 * DAY) }, role: "STUDENT", projects: { none: { chapters: { some: { sections: { some: { NOT: { content: "" } } } } } } } },
+  });
+
+  // Plain-language pointers, built from the numbers above.
+  const notes: string[] = [];
+  const first = funnel[0].users;
+  for (let i = 1; i < funnel.length && first >= 5; i += 1) {
+    const drop = funnel[i - 1].users ? 1 - funnel[i].users / funnel[i - 1].users : 0;
+    if (drop >= 0.4 && funnel[i - 1].users >= 5) notes.push(`${Math.round(drop * 100)}% of students who reached "${funnel[i - 1].step}" never got to "${funnel[i].step}".`);
+  }
+  const weak = sections.filter((s) => s.projects >= 5).sort((a, b) => a.startedPct - b.startedPct)[0];
+  if (weak && weak.startedPct < 60) notes.push(`"${weak.title}" is the section fewest students start (${weak.startedPct}%). Its guide may need to be clearer.`);
+  const badGuide = guides.filter((g) => g.closed >= 5).sort((a, b) => b.skipped / b.closed - a.skipped / a.closed)[0];
+  if (badGuide && badGuide.skipped / badGuide.closed >= 0.5 && badGuide.mostLeftAtStep) notes.push(`${Math.round((badGuide.skipped / badGuide.closed) * 100)}% skip the "${badGuide.guide}" guide, most often at step ${badGuide.mostLeftAtStep}.`);
+  if (failing[0] && num(runs[0]?.u) >= 3) notes.push(`The check that fails most often is "${failing[0].id}", seen in ${num(failing[0].n)} of ${num(runs[0]?.n)} runs.`);
+  if (stalled >= 3) notes.push(`${stalled} students signed up more than 3 days ago and have not written anything yet.`);
+
+  return {
+    funnel, sections, notes, stalledStudents: stalled,
+    checks: { runs: num(runs[0]?.n), students: num(runs[0]?.u), mostOften: failing.map((row) => ({ id: row.id, count: num(row.n) })) },
+    guides,
+    tools: tools.map((row) => ({ tool: row.tool, opens: num(row.opens), students: num(row.users) })),
+    errors: errors.map((row) => ({ code: row.code, count: num(row.n), students: num(row.users) })),
+    signupProblems: signupFields.map((row) => ({ field: row.field, count: num(row.n) })),
+  };
+}

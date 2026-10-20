@@ -35,13 +35,20 @@ export const login: RequestHandler = async (req, res) => {
   res.json({ success: true, data: { user } });
 };
 export const signup: RequestHandler = async (req, res) => {
-  const input = parse(signupSchema, req.body),
-    user = await service.signup({
-      firstName: input.firstName,
-      lastName: input.lastName,
-      email: input.email,
-      password: input.password,
-    });
+  let input: ReturnType<typeof signupSchema.parse>;
+  try {
+    input = parse(signupSchema, req.body);
+  } catch (error) {
+    const fields = (error as { details?: { fieldErrors?: Record<string, unknown> } }).details?.fieldErrors;
+    recordActivity({ type: "signup_failed", meta: { fields: fields ? Object.keys(fields).join(",") : "unknown" }, ip: req.ip });
+    throw error;
+  }
+  const user = await service.signup({
+    firstName: input.firstName,
+    lastName: input.lastName,
+    email: input.email,
+    password: input.password,
+  });
   await setSession(res, user);
   recordActivity({ type: "signup", userId: user.id, ip: req.ip });
   res.status(201).json({ success: true, data: { user } });

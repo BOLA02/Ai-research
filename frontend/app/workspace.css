@@ -546,3 +546,8 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .ad-feed li.warn .ad-dot { background: var(--pf-danger); }
 .ad-table td, .ad-table th { white-space: normal; }
 .ad-table .pf-muted { font-size: 13px; }
+.ad-funnel { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ad-funnel-head { display: flex; justify-content: space-between; font-size: 14.5px; margin-bottom: 4px; }
+.ad-funnel-bar { height: 10px; background: #ece7db; border-radius: 99px; overflow: hidden; }
+.ad-funnel-bar i { display: block; height: 100%; background: var(--pf-brand); border-radius: 99px; }
+.ad-funnel small { font-size: 12.5px; color: var(--pf-muted); }

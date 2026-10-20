@@ -5,7 +5,8 @@ export type ActivityType =
   | "password_reset_requested" | "password_reset_completed"
   | "onboarding_completed" | "project_created" | "project_deleted"
   | "export_docx" | "image_uploaded" | "ai_review"
-  | "account_deactivated" | "account_activated";
+  | "account_deactivated" | "account_activated"
+  | "signup_failed" | "checks_run" | "guide_opened" | "guide_closed" | "tool_opened" | "client_error";
 
 type Event = { type: ActivityType; userId?: string | null; projectId?: string | null; meta?: Record<string, string | number | boolean | null>; ip?: string | null };
 

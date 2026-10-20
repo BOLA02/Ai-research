@@ -109,7 +109,7 @@ export function ProjectHome() {
           </section>
         )}
       </div>
-      {touring && <Tour steps={HOME_STEPS} label="Project tour" onClose={() => { markSeen(HOME_SEEN); setTouring(false); }} />}
+      {touring && <Tour id="home" steps={HOME_STEPS} label="Project tour" onClose={() => { markSeen(HOME_SEEN); setTouring(false); }} />}
     </div>
   );
 }

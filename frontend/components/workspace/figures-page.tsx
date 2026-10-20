@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Copy, ImagePlus, Plus, Trash2 } from "lucide-react";
 import { API_BASE_URL } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { prepareImage } from "@/lib/workspace/image";
 import { useWorkspace } from "@/lib/workspace/provider";
 import { useReportIndex, useSectionOptions } from "@/lib/workspace/hooks";
@@ -32,6 +33,7 @@ function FigureCard({ figure, number }: { figure: ApiFigure; number?: number }) 
       await uploadFigureImage(figure.id, await prepareImage(chosen, MAX_BYTES));
       setVersion((current) => current + 1);
     } catch (reason) {
+      track({ type: "client_error", code: "image_upload_failed" });
       setError(reason instanceof Error ? reason.message : "Couldn't upload the image.");
     } finally {
       setBusy(false);

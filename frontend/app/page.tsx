@@ -88,7 +88,7 @@ export default function Landing() {
 
       <footer className="lp-wrap lp-foot">
         <span>ProjectForge</span>
-        <span><Link href="/help">Help</Link> · <Link href="/login">Sign in</Link></span>
+        <span><Link href="/help">Help</Link> · <Link href="/privacy">Privacy</Link> · <Link href="/login">Sign in</Link></span>
       </footer>
     </div>
   );

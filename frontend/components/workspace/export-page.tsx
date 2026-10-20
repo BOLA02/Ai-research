@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertCircle, AlertTriangle, CheckCircle2, Download, FileText } from "lucide-react";
 import { API_BASE_URL, api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { useWorkspace } from "@/lib/workspace/provider";
 import type { Check } from "@/lib/workspace/types";
 import { ToolGuide } from "./tool-guide";
@@ -51,6 +52,7 @@ export function ExportPage() {
       link.click();
       URL.revokeObjectURL(link.href);
     } catch {
+      track({ type: "client_error", code: "export_failed" });
       setError("We couldn't create the document. Please try again in a moment.");
     } finally {
       setBusy(false);

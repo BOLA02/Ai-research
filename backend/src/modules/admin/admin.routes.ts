@@ -12,6 +12,8 @@ const one = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 
 adminRouter.get("/overview", async (_req, res) => res.json({ success: true, data: await service.overview() }));
 
+adminRouter.get("/insights", async (_req, res) => res.json({ success: true, data: await service.insights() }));
+
 adminRouter.get("/users", async (req, res) => {
   const query = parse(z.object({ search: z.string().max(100).optional(), page }), { search: one(req.query.search), page: one(req.query.page) });
   res.json({ success: true, data: await service.listUsers(query) });

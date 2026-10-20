@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="pf-brand-name">ProjectForge</span>
         </Link>
         <nav className="pf-nav" aria-label="Main">
-          {[...links, ...(user?.role === "admin" ? [{ label: "Admin", href: "/admin" }] : [])].map((link) => (
+          {links.map((link) => (
             <Link key={link.href} href={link.href} aria-current={isActive(path, link.href) ? "page" : undefined}>
               {link.label}
             </Link>

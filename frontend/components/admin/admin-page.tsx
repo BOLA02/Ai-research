@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Activity, FolderKanban, Loader2, RefreshCw, ShieldAlert, Users } from "lucide-react";
+import { Activity, FolderKanban, Lightbulb, Loader2, RefreshCw, Users } from "lucide-react";
 import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -74,20 +74,19 @@ const Stat = ({ label, value, note, tone }: { label: string; value: number | str
 
 export function AdminPage() {
   const { user, loading } = useAuth();
-  const [tab, setTab] = useState<"overview" | "activity" | "users" | "projects">("overview");
+  const [tab, setTab] = useState<"overview" | "insights" | "activity" | "users" | "projects">("overview");
   const [userFilter, setUserFilter] = useState<{ id: string; name: string } | null>(null);
   if (loading) return null;
   if (user?.role !== "admin")
     return (
       <div className="pf-section" style={{ maxWidth: 560 }}>
-        <ShieldAlert size={28} aria-hidden color="var(--pf-danger)" />
-        <h1 style={{ fontSize: 26 }}>This area is for administrators</h1>
-        <p className="pf-muted">If you should have access, ask the site owner to add your email to the administrators list.</p>
+        <h1 style={{ fontSize: 26 }}>This page could not be found</h1>
+        <p className="pf-muted">The page you are looking for does not exist or has moved.</p>
         <Link className="pf-btn" href="/dashboard">Back to your projects</Link>
       </div>
     );
 
-  const tabs = [["overview", "Overview", Activity], ["activity", "Activity", Activity], ["users", "Users", Users], ["projects", "Projects", FolderKanban]] as const;
+  const tabs = [["overview", "Overview", Activity], ["insights", "Where students struggle", Lightbulb], ["activity", "Activity", Activity], ["users", "Users", Users], ["projects", "Projects", FolderKanban]] as const;
   return (
     <div className="pf-section" style={{ maxWidth: 1100 }}>
       <div className="pf-eyebrow">Administration</div>
@@ -97,6 +96,7 @@ export function AdminPage() {
         {tabs.map(([id, label]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "on" : ""} onClick={() => setTab(id)}>{label}</button>)}
       </div>
       {tab === "overview" && <OverviewTab />}
+      {tab === "insights" && <InsightsTab />}
       {tab === "activity" && <ActivityTab filter={userFilter} clear={() => setUserFilter(null)} />}
       {tab === "users" && <UsersTab onActivity={(id, name) => { setUserFilter({ id, name }); setTab("activity"); }} meId={user.id} />}
       {tab === "projects" && <ProjectsTab />}
@@ -114,7 +114,7 @@ function useLoad<T>(path: string, every?: number) {
       setData(await api<T>(path));
       setError("");
     } catch (reason) {
-      setError(reason instanceof ApiError && reason.code === "ADMIN_ONLY" ? "This area is for administrators." : "We couldn't load this. Check your connection and try again.");
+      setError(reason instanceof ApiError && reason.code === "NOT_FOUND" ? "This page could not be found." : "We couldn't load this. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
@@ -303,6 +303,127 @@ function ProjectsTab() {
             </table>
           </div>
           <Pager page={data.page} total={data.total} size={data.pageSize} set={setPage} />
+        </>
+      )}
+    </Shell>
+  );
+}
+
+/* ---------------------------------------------------------------- insights */
+
+type Insights = {
+  funnel: { step: string; users: number }[];
+  sections: { key: string; title: string; chapter: number; projects: number; started: number; startedPct: number; avgWords: number }[];
+  notes: string[];
+  stalledStudents: number;
+  checks: { runs: number; students: number; mostOften: { id: string; count: number }[] };
+  guides: { guide: string; opened: number; closed: number; completed: number; skipped: number; mostLeftAtStep: number | null; leftAtCount: number }[];
+  tools: { tool: string; opens: number; students: number }[];
+  errors: { code: string; count: number; students: number }[];
+  signupProblems: { field: string; count: number }[];
+};
+
+const CHECKS: Record<string, string> = {
+  "unknown-citations": "Citations that match no source", "unknown-refs": "Figure or table mentions that match nothing", "no-sources": "No sources added yet",
+  "uncited-sources": "Sources never cited", "source-fields": "Sources missing details", "related-works-min": "Too few related works cited",
+  "figures-unreferenced": "Figures never mentioned in the text", "tables-unreferenced": "Tables never mentioned in the text", "figures-unplaced": "Figures not placed in a section",
+  "tables-unplaced": "Tables not placed in a section", "figures-attribution": "Imported figures with no source", "figures-image": "Figures with no picture",
+  "project-details": "Cover and approval details missing", "calculations-errors": "Calculations with mistakes", "calculations-unplaced": "Calculations not placed in a section",
+  "heading-depth": "Headings too deep", "empty-sections": "Sections still empty", "abstract-markers": "Citations in the abstract", abstract: "Abstract still empty", length: "Report length",
+};
+const GUIDES: Record<string, string> = { section: "Section guide", home: "Project tour" };
+const guideName = (id: string) => GUIDES[id] ?? (id.startsWith("tool-") ? `${id.slice(5)[0]?.toUpperCase()}${id.slice(6)} tool guide` : id);
+const ERRORS: Record<string, string> = { save_failed: "Saving text failed", image_upload_failed: "Picture upload failed", export_failed: "Word download failed" };
+const FIELDS: Record<string, string> = { email: "email address", password: "password", confirmPassword: "password confirmation", firstName: "first name", lastName: "last name" };
+const TOOLS: Record<string, string> = { details: "Project details", references: "References", figures: "Figures", tables: "Tables", calculations: "Calculations", book: "Book view", validation: "Checks", export: "Export" };
+
+function InsightsTab() {
+  const { data, error, busy, reload } = useLoad<Insights>("/admin/insights", 60_000);
+  const top = data?.funnel[0]?.users || 1;
+  return (
+    <Shell error={error} busy={busy && !data} reload={reload}>
+      {data && (
+        <>
+          <section className="pf-card" style={{ padding: 16, marginBottom: 16 }}>
+            <h3 style={{ margin: "0 0 8px", display: "flex", gap: 8, alignItems: "center" }}><Lightbulb size={18} aria-hidden /> What stands out</h3>
+            {data.notes.length === 0 ? <p className="pf-muted" style={{ margin: 0 }}>Nothing stands out yet. This fills in as more students use the site (it needs at least 5 students or projects to say anything).</p> : <ul style={{ margin: 0, paddingLeft: 20 }}>{data.notes.map((note) => <li key={note} style={{ marginBottom: 6 }}>{note}</li>)}</ul>}
+          </section>
+
+          <section className="pf-card" style={{ padding: 16, marginBottom: 16 }}>
+            <h3 style={{ margin: "0 0 4px" }}>How far students get</h3>
+            <p className="pf-hint" style={{ marginTop: 0 }}>Students who did each thing at least once. A big drop between two steps is where people give up.</p>
+            <ol className="ad-funnel">
+              {data.funnel.map((row, i) => {
+                const prev = i ? data.funnel[i - 1].users : row.users;
+                const drop = prev ? Math.round((1 - row.users / prev) * 100) : 0;
+                return (
+                  <li key={row.step}>
+                    <div className="ad-funnel-head"><span>{row.step}</span><strong>{row.users}</strong></div>
+                    <div className="ad-funnel-bar"><i style={{ width: `${Math.max(2, (row.users / top) * 100)}%` }} /></div>
+                    {i > 0 && drop > 0 && <small style={drop >= 40 ? { color: "var(--pf-danger)", fontWeight: 600 } : undefined}>{drop}% fewer than the step before</small>}
+                  </li>
+                );
+              })}
+            </ol>
+            {data.stalledStudents > 0 && <p className="pf-hint">{data.stalledStudents} student{data.stalledStudents === 1 ? "" : "s"} signed up over 3 days ago and haven&apos;t written anything.</p>}
+          </section>
+
+          <section className="pf-card" style={{ padding: 16, marginBottom: 16 }}>
+            <h3 style={{ margin: "0 0 4px" }}>Which sections students start</h3>
+            <p className="pf-hint" style={{ marginTop: 0 }}>Share of projects with at least one word in the section, and the average length when started. Low numbers mean students avoid it or don&apos;t know what to write.</p>
+            <div className="hp-table-wrap">
+              <table className="hp-table ad-table">
+                <thead><tr><th>Ch.</th><th>Section</th><th>Started</th><th /><th>Average words</th></tr></thead>
+                <tbody>
+                  {data.sections.map((row) => (
+                    <tr key={row.key}>
+                      <td>{row.chapter}</td><td>{row.title}</td>
+                      <td>{row.startedPct}% <span className="pf-muted">({row.started}/{row.projects})</span></td>
+                      <td style={{ width: 120 }}><div className="ad-funnel-bar"><i style={{ width: `${Math.max(1, row.startedPct)}%`, background: row.startedPct < 30 ? "var(--pf-accent)" : undefined }} /></div></td>
+                      <td>{row.started ? row.avgWords : "–"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <div className="ad-grid">
+            <section className="pf-card" style={{ padding: 16 }}>
+              <h3 style={{ margin: "0 0 4px" }}>What fails the checks most</h3>
+              <p className="pf-hint" style={{ marginTop: 0 }}>Last 30 days, {data.checks.runs} runs by {data.checks.students} student{data.checks.students === 1 ? "" : "s"}. Only the name of each check is kept.</p>
+              {data.checks.mostOften.length === 0 ? <p className="pf-muted" style={{ margin: 0 }}>No data yet.</p> : <ul className="ad-types" style={{ gridTemplateColumns: "1fr" }}>{data.checks.mostOften.map((row) => <li key={row.id}><span>{CHECKS[row.id] ?? row.id}</span><strong>{row.count}</strong></li>)}</ul>}
+            </section>
+            <section className="pf-card" style={{ padding: 16 }}>
+              <h3 style={{ margin: "0 0 4px" }}>Guides</h3>
+              <p className="pf-hint" style={{ marginTop: 0 }}>Last 30 days. &quot;Left early&quot; means they pressed Skip or Esc before the last step.</p>
+              {data.guides.length === 0 ? <p className="pf-muted" style={{ margin: 0 }}>No data yet.</p> : (
+                <ul className="ad-types" style={{ gridTemplateColumns: "1fr" }}>
+                  {data.guides.map((row) => (
+                    <li key={row.guide} style={{ display: "block" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span>{guideName(row.guide)}</span><strong>{row.opened} opened</strong></div>
+                      <small className="pf-muted">{row.completed} finished · {row.skipped} left early{row.mostLeftAtStep ? ` (most at step ${row.mostLeftAtStep})` : ""}</small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section className="pf-card" style={{ padding: 16 }}>
+              <h3 style={{ margin: "0 0 4px" }}>Tools used</h3>
+              <p className="pf-hint" style={{ marginTop: 0 }}>Times opened and students, last 30 days. A tool nobody opens may be hard to find.</p>
+              {data.tools.length === 0 ? <p className="pf-muted" style={{ margin: 0 }}>No data yet.</p> : <ul className="ad-types" style={{ gridTemplateColumns: "1fr" }}>{data.tools.map((row) => <li key={row.tool}><span>{TOOLS[row.tool] ?? row.tool}</span><strong>{row.opens} <span className="pf-muted" style={{ fontWeight: 400 }}>({row.students} students)</span></strong></li>)}</ul>}
+            </section>
+            <section className="pf-card" style={{ padding: 16 }}>
+              <h3 style={{ margin: "0 0 4px" }}>Things that went wrong</h3>
+              <p className="pf-hint" style={{ marginTop: 0 }}>Errors students hit and sign-up fields they got wrong, last 30 days.</p>
+              {data.errors.length === 0 && data.signupProblems.length === 0 ? <p className="pf-muted" style={{ margin: 0 }}>Nothing reported.</p> : (
+                <ul className="ad-types" style={{ gridTemplateColumns: "1fr" }}>
+                  {data.errors.map((row) => <li key={row.code}><span>{ERRORS[row.code] ?? row.code}</span><strong>{row.count} <span className="pf-muted" style={{ fontWeight: 400 }}>({row.students} students)</span></strong></li>)}
+                  {data.signupProblems.map((row) => <li key={row.field}><span>Sign-up: {FIELDS[row.field] ?? row.field} rejected</span><strong>{row.count}</strong></li>)}
+                </ul>
+              )}
+            </section>
+          </div>
         </>
       )}
     </Shell>

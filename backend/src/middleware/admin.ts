@@ -6,7 +6,8 @@ import { requireAuth } from "./auth";
 export const requireAdmin: RequestHandler[] = [
   requireAuth,
   (req, _res, next) => {
-    if (req.user?.role !== "admin") throw new AppError(403, "ADMIN_ONLY", "This area is for administrators");
+    if (req.user?.role !== "admin") // Look like any other missing page, so the admin area is not announced to students.
+    throw new AppError(404, "NOT_FOUND", "Not found");
     next();
   },
 ];
