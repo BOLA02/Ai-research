@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { track } from "@/lib/analytics";
 
 export type TourStep = {
   /** Value of the `data-tour` attribute on the element to spotlight. */
@@ -16,6 +17,8 @@ export type TourStep = {
 type Props = {
   steps: TourStep[];
   label: string;
+  /** Names the guide in the site owner's statistics, for example "section" or "tool-figures". */
+  id?: string;
   /** Called when the tour ends. `completed` is true only if the student reached the last step. */
   onClose: (completed: boolean) => void;
 };
@@ -56,9 +59,18 @@ export function markSeen(key: string) {
  * The dimmed area is made of four panels around the target, so the target itself
  * stays clear and clickable.
  */
-export function Tour({ steps, label, onClose }: Props) {
+export function Tour({ steps, label, id, onClose: onCloseProp }: Props) {
   const [mounted, setMounted] = useState(false);
   const [at, setAt] = useState(0);
+  const atRef = useRef(0);
+  const finished = useRef(false);
+  useEffect(() => { atRef.current = at; }, [at]);
+  useEffect(() => { if (id) track({ type: "guide_opened", guide: id }); }, [id]);
+  const onClose = useCallback((completed: boolean) => {
+    if (!finished.current && id) track({ type: "guide_closed", guide: id, step: atRef.current, total: steps.length, completed });
+    finished.current = true;
+    onCloseProp(completed);
+  }, [id, steps.length, onCloseProp]);
   const [box, setBox] = useState<Box | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const card = useRef<HTMLDivElement>(null);

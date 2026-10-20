@@ -3,6 +3,7 @@ import { resolveText } from "../../citations";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "../../templates";
 import { loadReportContext } from "../report/report.context";
 import { buildIndex } from "../report/report.service";
+import { recordActivity } from "../activity";
 import { buildDocx } from "./docx-builder";
 import type { BodyPart, CalcBlock, ExportModel, FigureBlock, SectionBlock, TableBlock } from "./export.model";
 import { figureBytes } from "../figures/figure.service";
@@ -134,7 +135,9 @@ export async function buildExportModel(userId: string, projectId: string): Promi
 
 export async function exportDocx(userId: string, projectId: string) {
   const model = await buildExportModel(userId, projectId);
-  return { buffer: await buildDocx(model), title: model.title };
+  const buffer = await buildDocx(model);
+  recordActivity({ type: "export_docx", userId, projectId, meta: { kb: Math.round(buffer.length / 1024) } });
+  return { buffer, title: model.title };
 }
 
 /** The report as the book preview shows it. Pictures are left out; the page asks for each one by its id. */

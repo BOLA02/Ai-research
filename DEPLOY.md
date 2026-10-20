@@ -23,6 +23,7 @@ The website forwards everything under `/api` to the API. The browser therefore o
 | `RESEND_API_KEY` | from resend.com (password-reset email) |
 | `MAIL_FROM` | e.g. `ProjectForge <noreply@your-domain.com>` (a verified sender in Resend) |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | from your Cloudinary dashboard; figure images are stored there (up to 8 MB each). Leave out to keep them in the database. |
+| `ADMIN_EMAILS` | your own email (comma-separate more). Those accounts see **Admin** in the app header and can open `/admin`. |
 | `ANTHROPIC_API_KEY` | optional; leave out to keep the writing coach switched off |
 
 4. **Settings → Networking → Generate Domain.** Note the address, e.g. `https://projectforge-api.up.railway.app`.
@@ -37,6 +38,8 @@ The website forwards everything under `/api` to the API. The browser therefore o
 | --- | --- |
 | `API_ORIGIN` | the Railway address from step 4 above (no trailing slash) |
 | `SESSION_COOKIE_NAME` | leave out unless you changed it on the API |
+| `ADMIN_SLUG` | a long secret word such as `desk-7f3k9q2m` (8 to 60 letters, numbers, `-` or `_`). Your admin page is then at `https://your-site/desk-7f3k9q2m`, and `/admin` does not exist. Never link to it. Set it before the build (changing it means redeploying). |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | the email shown on the privacy page for data requests |
 
 3. Deploy. `FRONTEND_URL` on Railway must equal the final Vercel address (if you add a custom domain, update it and redeploy the API).
 
@@ -47,6 +50,8 @@ The website forwards everything under `/api` to the API. The browser therefore o
 - Create a project, write something, and export a Word file.
 
 ## Things to know
+
+- **Create your own account before you set `ADMIN_EMAILS`.** Emails are not verified at sign-up, so whoever registers an address first owns it. Sign up with the email you will use as administrator, then add it to `ADMIN_EMAILS`.
 
 - **Email:** until a sender domain is verified in Resend, it only delivers to your own address (`onboarding@resend.dev`). Verify a domain before inviting students.
 - **Backups:** turn on Railway's Postgres backups. Students' reports live there.

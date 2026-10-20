@@ -23,7 +23,7 @@ export function ToolGuide({ id, label, steps }: { id: string; label: string; ste
       <button type="button" className="pf-btn pf-btn-sm" onClick={() => setOpen(true)} data-tip={`A short step-by-step guide to ${label}`}>
         <Compass size={14} aria-hidden /> Guide me
       </button>
-      {open && <Tour steps={steps} label={`${label} guide`} onClose={() => { markSeen(key); setOpen(false); }} />}
+      {open && <Tour id={`tool-${id}`} steps={steps} label={`${label} guide`} onClose={() => { markSeen(key); setOpen(false); }} />}
     </>
   );
 }

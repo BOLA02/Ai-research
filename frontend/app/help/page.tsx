@@ -154,6 +154,7 @@ export default function HelpPage() {
             <details><summary>My picture won&apos;t upload.</summary><p>Check your connection and try again. Very large images are shrunk before upload; if it is still too large, choose a smaller one.</p></details>
             <details><summary>The table of contents shows no page numbers in Word.</summary><p>Right-click the table of contents and choose <em>Update field</em>, then <em>Update entire table</em>.</p></details>
             <details><summary>The writing coach isn&apos;t there.</summary><p>The coach is optional and only appears when it has been switched on for your site. Everything else works without it.</p></details>
+            <details><summary>Who can see what I write?</summary><p>Only you. The site administrator sees account details and counts such as how many sections you have started, never your text. Read the full <Link href="/privacy">privacy note</Link>.</p></details>
             <details><summary>Can I use this for another department?</summary><p>Today only the Electrical and Electronic Engineering HND templates exist. Other departments need their own template.</p></details>
           </section>
 

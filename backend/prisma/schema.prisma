@@ -66,6 +66,7 @@ model User {
   sessions     Session[]
   aiUsage      AiUsage[]
   passwordResets PasswordReset[]
+  activity     ActivityLog[]
 
   @@index([email, isActive])
 }
@@ -300,4 +301,20 @@ model PasswordReset {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid
+  type      String   @db.VarChar(40)
+  projectId String?  @db.Uuid
+  // Short facts such as a project title or the number of pages. Never the text a student wrote.
+  meta      Json?
+  ip        String?  @db.VarChar(64)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }

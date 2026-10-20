@@ -1,4 +1,6 @@
+import { env } from "../../config/env";
 import { AppError } from "../../shared/errors";
+import { recordActivity } from "../activity";
 import * as repository from "./user.repository";
 import { scoreReadiness, type ReadinessAnswers } from "./onboarding";
 type UserRow = {
@@ -16,12 +18,14 @@ type UserRow = {
 
 // Pick fields explicitly: callers sometimes pass a full database row, and the
 // password hash must never reach a response.
+const adminEmails = new Set(env.ADMIN_EMAILS.split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));
 const publicUser = (user: UserRow) => ({
   id: user.id,
   firstName: user.firstName,
   lastName: user.lastName,
   email: user.email,
-  role: user.role.toLowerCase() as "student" | "admin",
+  // Emails in ADMIN_EMAILS are administrators even when the database row says student.
+  role: (user.role === "ADMIN" || adminEmails.has(user.email.toLowerCase()) ? "admin" : "student") as "student" | "admin",
   isActive: user.isActive,
   experienceLevel: user.experienceLevel,
   onboardedAt: user.onboardedAt ? user.onboardedAt.toISOString() : null,
@@ -41,6 +45,8 @@ export async function updateProfile(
 }
 export async function completeOnboarding(id: string, input: { answers?: ReadinessAnswers }) {
   const experienceLevel = input.answers ? scoreReadiness(input.answers) : null;
-  return publicUser(await repository.setOnboarding(id, { experienceLevel, onboardedAt: new Date() }));
+  const user = publicUser(await repository.setOnboarding(id, { experienceLevel, onboardedAt: new Date() }));
+  recordActivity({ type: "onboarding_completed", userId: id, meta: { level: experienceLevel } });
+  return user;
 }
 export { publicUser };

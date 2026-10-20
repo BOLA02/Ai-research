@@ -17,6 +17,8 @@ const schema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+  // Comma-separated emails that can open the admin panel, for example ADMIN_EMAILS=you@example.com
+  ADMIN_EMAILS: z.string().default(""),
   SESSION_TTL_HOURS: z.coerce.number().positive().max(168).default(8),
   SESSION_COOKIE_NAME: z.string().min(1).default("pf_session"),
   // The writing coach is switched on by setting an API key. The SDK reads ANTHROPIC_BASE_URL itself.

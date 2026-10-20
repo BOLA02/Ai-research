@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import type { ApiCalculation, ApiChapter, ApiDocument, ApiFigure, ApiProject, ApiSection, ApiSource, ApiTable, CalcDraft, CalcResult, ReferenceStyle, SourceInput, Template } from "./types";
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
@@ -121,6 +122,7 @@ export function WorkspaceProvider({ projectId, children }: { projectId: string; 
         .catch(() => {
           inFlight.current -= 1;
           setSaveState("error");
+          track({ type: "client_error", code: "save_failed" });
         })
         .finally(() => settled.current.delete(request));
       settled.current.add(request);

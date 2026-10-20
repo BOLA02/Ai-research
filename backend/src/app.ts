@@ -17,6 +17,8 @@ import { reportRouter } from "./modules/report";
 import { exportRouter } from "./modules/export";
 import { aiRouter } from "./modules/ai";
 import { calculationRouter } from "./modules/calculations";
+import { adminRouter } from "./modules/admin";
+import { analyticsRouter } from "./modules/activity/analytics.routes";
 import { errorHandler, notFound } from "./middleware/errors";
 export const app = express();
 app.disable("x-powered-by");
@@ -36,6 +38,8 @@ app.get("/api/health", (_req, res) =>
 );
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/analytics", analyticsRouter);
 app.use("/api/templates", templateRouter);
 app.use("/api/projects", documentRouter);
 app.use("/api/projects", sectionRouter);

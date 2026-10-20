@@ -1,5 +1,6 @@
 import { ProjectMemberRole } from "@prisma/client";
 import { AppError } from "../../shared/errors";
+import { recordActivity } from "../activity";
 import * as repository from "./project.repository";
 export function listProjects(userId: string) {
   return repository.listAccessible(userId);
@@ -8,7 +9,10 @@ export function createProject(
   userId: string,
   input: Parameters<typeof repository.createOwned>[1],
 ) {
-  return repository.createOwned(userId, input);
+  return repository.createOwned(userId, input).then((project) => {
+    recordActivity({ type: "project_created", userId, projectId: project.id, meta: { title: String(project.title).slice(0, 120), template: project.templateId ?? null } });
+    return project;
+  });
 }
 export async function getProject(userId: string, projectId: string) {
   const project = await repository.findAccessible(userId, projectId);
@@ -39,4 +43,5 @@ export async function deleteProject(userId: string, projectId: string) {
   const result = await repository.deleteOwned(projectId, userId);
   if (!result.count)
     throw new AppError(404, "PROJECT_NOT_FOUND", "Project not found");
+  recordActivity({ type: "project_deleted", userId, projectId });
 }
