@@ -23,6 +23,7 @@ The website forwards everything under `/api` to the API. The browser therefore o
 | `RESEND_API_KEY` | from resend.com (password-reset email) |
 | `MAIL_FROM` | e.g. `ProjectForge <noreply@your-domain.com>` (a verified sender in Resend) |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | from your Cloudinary dashboard; figure images are stored there (up to 8 MB each). Leave out to keep them in the database. |
+| `ADMIN_EMAILS` | your own email (comma-separate more). Those accounts see **Admin** in the app header and can open `/admin`. |
 | `ANTHROPIC_API_KEY` | optional; leave out to keep the writing coach switched off |
 
 4. **Settings → Networking → Generate Domain.** Note the address, e.g. `https://projectforge-api.up.railway.app`.

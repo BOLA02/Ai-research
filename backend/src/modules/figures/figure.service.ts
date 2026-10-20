@@ -2,6 +2,7 @@ import { AppError } from "../../shared/errors";
 import { uniqueLabel } from "../../shared/labels";
 import { getProject, requireProjectWriteAccess } from "../projects";
 import { cloudinaryEnabled, destroyImage, download, uploadImage } from "../../lib/cloudinary";
+import { recordActivity } from "../activity";
 import * as repository from "./figure.repository";
 
 // Cloudinary can hold bigger pictures than the database comfortably can.
@@ -61,6 +62,7 @@ export async function saveImage(userId: string, projectId: string, id: string, b
   if (bytes.length > MAX_IMAGE_BYTES) throw new AppError(413, "IMAGE_TOO_LARGE", `Images can be up to ${MAX_IMAGE_BYTES / 1024 / 1024} MB`);
   const type = detectImageType(bytes);
   if (!type) throw new AppError(415, "IMAGE_TYPE_UNSUPPORTED", "Use a PNG or JPEG image");
+  recordActivity({ type: "image_uploaded", userId, projectId, meta: { kb: Math.round(bytes.length / 1024), storage: cloudinaryEnabled ? "cloudinary" : "database" } });
   const previous = await repository.findWithImage(projectId, id);
   if (cloudinaryEnabled) {
     let stored: { url: string; publicId: string };

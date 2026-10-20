@@ -523,3 +523,26 @@ a.pf-row:hover { border-color: var(--pf-brand); }
 .lp-play { left: auto; right: 14px; bottom: auto; top: 14px; }
 .lp-nav .lp-btn { white-space: nowrap; }
 @media (max-width: 860px) { .lp-nav { gap: 8px; } .lp-nav .lp-btn { padding: 0 12px; font-size: 14px; } }
+
+/* ------------------------------------------------------------ Admin */
+.ad-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.ad-stat { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.ad-stat span { font-size: 13px; color: var(--pf-ink-soft); }
+.ad-stat strong { font-size: 30px; letter-spacing: -0.02em; }
+.ad-stat small { font-size: 12px; color: var(--pf-muted); }
+.ad-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.ad-bars { display: flex; align-items: flex-end; gap: 4px; height: 110px; }
+.ad-bars i { flex: 1; background: var(--pf-brand); border-radius: 4px 4px 0 0; min-width: 4px; }
+.ad-bars i[data-zero] { background: var(--pf-line-strong); }
+.ad-types { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px 24px; }
+.ad-types li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--pf-line); }
+.ad-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.ad-live { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; color: var(--pf-ink-soft); min-height: 44px; }
+.ad-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ad-feed li { display: grid; grid-template-columns: 12px 1fr auto; gap: 12px; align-items: start; background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: 10px; padding: 12px 14px; font-size: 14.5px; }
+.ad-feed li.warn { border-color: #e9b9b0; background: var(--pf-danger-soft); }
+.ad-feed time { color: var(--pf-muted); font-size: 13px; white-space: nowrap; }
+.ad-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pf-brand); margin-top: 6px; }
+.ad-feed li.warn .ad-dot { background: var(--pf-danger); }
+.ad-table td, .ad-table th { white-space: normal; }
+.ad-table .pf-muted { font-size: 13px; }

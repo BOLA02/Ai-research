@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { sendMail, type Mailer } from "../../lib/mailer";
 import { AppError } from "../../shared/errors";
 import { findUserByEmail } from "../users";
+import { recordActivity } from "../activity";
 import { resetEmail } from "./reset-email";
 
 const hash = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -23,6 +24,7 @@ export async function requestPasswordReset(email: string, mailer: Mailer = sendM
     prisma.passwordReset.deleteMany({ where: { userId: user.id } }),
     prisma.passwordReset.create({ data: { userId: user.id, tokenHash: hash(token), expiresAt } }),
   ]);
+  recordActivity({ type: "password_reset_requested", userId: user.id });
   const link = `${env.FRONTEND_URL.replace(/\/$/, "")}/reset-password?token=${token}`;
   try {
     await mailer({ to: user.email, subject: "Reset your ProjectForge password", ...resetEmail(user.firstName, link, env.PASSWORD_RESET_TTL_MINUTES) });
@@ -46,4 +48,5 @@ export async function resetPassword(token: string, password: string) {
     prisma.session.deleteMany({ where: { userId: record.userId } }),
     prisma.passwordReset.deleteMany({ where: { userId: record.userId } }),
   ]);
+  recordActivity({ type: "password_reset_completed", userId: record.userId });
 }

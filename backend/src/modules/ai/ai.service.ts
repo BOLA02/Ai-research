@@ -2,6 +2,7 @@ import { env } from "../../config/env";
 import { findMarkers, resolveText } from "../../citations";
 import { AppError } from "../../shared/errors";
 import { DEFAULT_TEMPLATE_ID, getTemplate, type SectionTemplate } from "../../templates";
+import { recordActivity } from "../activity";
 import { loadReportContext } from "../report/report.context";
 import { buildIndex } from "../report/report.service";
 import { AiRefusedError, AiUnavailableError, aiEnabled, anthropicReviewClient, type ReviewClient } from "./ai.client";
@@ -100,5 +101,6 @@ export async function reviewText(userId: string, projectId: string, request: { k
     if (error instanceof AiUnavailableError) throw new AppError(503, "AI_UNAVAILABLE", "The writing coach isn't available right now. Please try again in a few minutes.");
     throw error;
   }
+  recordActivity({ type: "ai_review", userId, projectId, meta: { kind: request.kind } });
   return { review, ...(await status(userId)) };
 }
