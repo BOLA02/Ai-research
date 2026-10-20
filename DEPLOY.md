@@ -51,6 +51,8 @@ The website forwards everything under `/api` to the API. The browser therefore o
 
 ## Things to know
 
+- **Create your own account before you set `ADMIN_EMAILS`.** Emails are not verified at sign-up, so whoever registers an address first owns it. Sign up with the email you will use as administrator, then add it to `ADMIN_EMAILS`.
+
 - **Email:** until a sender domain is verified in Resend, it only delivers to your own address (`onboarding@resend.dev`). Verify a domain before inviting students.
 - **Backups:** turn on Railway's Postgres backups. Students' reports live there.
 - **Sign-in limit:** sign-in and sign-up allow 10 tries per 15 minutes per address. `TRUST_PROXY` must be set or every student shares one address and can lock each other out.

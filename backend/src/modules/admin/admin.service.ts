@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { env } from "../../config/env";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../shared/errors";
 import { recordActivity } from "../activity";
@@ -68,9 +69,10 @@ export async function listUsers(input: { search?: string; page: number }) {
 
 export async function setActive(adminId: string, userId: string, isActive: boolean) {
   if (adminId === userId) throw new AppError(400, "CANNOT_CHANGE_SELF", "You can't deactivate your own account");
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true, email: true } });
   if (!user) throw new AppError(404, "USER_NOT_FOUND", "User not found");
-  if (user.role === "ADMIN") throw new AppError(400, "CANNOT_CHANGE_ADMIN", "Administrators can't be deactivated here");
+  const listed = env.ADMIN_EMAILS.split(",").map((email) => email.trim().toLowerCase()).filter(Boolean).includes(user.email.toLowerCase());
+  if (user.role === "ADMIN" || listed) throw new AppError(400, "CANNOT_CHANGE_ADMIN", "Administrators can't be deactivated here");
   await prisma.user.update({ where: { id: userId }, data: { isActive } });
   if (!isActive) await prisma.session.deleteMany({ where: { userId } });
   recordActivity({ type: isActive ? "account_activated" : "account_deactivated", userId, meta: { by: adminId } });
