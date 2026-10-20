@@ -18,7 +18,7 @@ import { exportRouter } from "./modules/export";
 import { aiRouter } from "./modules/ai";
 import { calculationRouter } from "./modules/calculations";
 import { adminRouter } from "./modules/admin";
-import { analyticsRouter } from "./modules/activity";
+import { analyticsRouter } from "./modules/activity/analytics.routes";
 import { errorHandler, notFound } from "./middleware/errors";
 export const app = express();
 app.disable("x-powered-by");
